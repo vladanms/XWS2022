@@ -22,8 +22,8 @@ func (u *Users) Register(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (u *Users) LogIn(rw http.ResponseWriter, r *http.Request) {
-	user := data.User{}
-	err := data.FromJSON(user, r.Body)
+	var user *data.User
+	err := data.FromJSON(&user, r.Body)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
