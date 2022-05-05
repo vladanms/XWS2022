@@ -9,12 +9,17 @@ import (
 )
 
 type Post struct {
-	Username   string `json:"username,omitempty"`
-	TxtContent string `json:"text,omitempty"`
-	Hyperlink  string `json:"link,omitempty"`
+	ID         primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	Username   string             `json:"username,omitempty"`
+	TxtContent string             `json:"text,omitempty"`
+	Hyperlink  string             `json:"link,omitempty"`
+	Comments   Comments           `json:"-"`
+	Likes      Likes              `json:"-"`
 }
 
 type Posts []*Post
+
+var ErrPostNotFound = fmt.Errorf("Post not found")
 
 func AddPostToDB(post Post) primitive.ObjectID {
 	fmt.Println("[DEBUG] entered adding post to db")

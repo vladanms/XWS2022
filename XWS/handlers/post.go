@@ -88,7 +88,10 @@ func (u *Users) CreatePost(rw http.ResponseWriter, r *http.Request) {
 	}
 	u.l.Println(username)
 	post.Username = username.(string)
+	//post.Comments = make([]data.Comment, 0, 1000)
+	//post.Likes = make([]data.Like, 0, 1000)
 	postID := data.AddPostToDB(*post)
+	post.ID = postID
 	u.l.Println("[DEBUG] returned from adding post to db")
 
 	//r.Body = http.MaxBytesReader(rw, r.Body, 32<<20+512)
