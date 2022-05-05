@@ -47,16 +47,8 @@ func main() {
 	LogOutR := sm.Methods(http.MethodPost).Subrouter()
 	LogOutR.HandleFunc("/logout", ph.LogOut)
 
-	//deleteR := sm.Methods(http.MethodDelete).Subrouter()
-	//deleteR.HandleFunc("/products/{id:[0-9]+}", ph.Delete)
-
-	// handler for documentation
-	//opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
-	//sh := middleware.Redoc(opts, nil)
-
-	//getR.Handle("/docs", sh)
-	//getR.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
-
+	PostImageR := sm.Methods(http.MethodPost).Subrouter()
+	PostImageR.HandleFunc("/posts", ph.CreatePost)
 	// create a new server
 	s := http.Server{
 		Addr:         *bindAddress,      // configure the bind address

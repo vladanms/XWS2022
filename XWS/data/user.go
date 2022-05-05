@@ -9,21 +9,28 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type Role int64
+
+const (
+	Admin   Role = 1
+	RegUser      = 2
+)
+
 type User struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	Username string             `bson:"username" validate:"username,excludesall= "`
+	ID       primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	Username string             `json:"username" validate:"username,excludesall= "`
 	Email    string             `json:"email" validate:"required,excludesall= "`
-	Password string             `json:"password" validate:"password,excludesall= "`
-	Admin    bool
+	Password *string            `json:",omitempty" validate:"password,excludesall= "`
+	Role     Role               `json:"-"`
 }
 
-// Products defines a slice of Product
+// Users defines a slice of Product
 type Users []*User
 
 // ErrProductNotFound is an error raised when a product can not be found in the database
 var ErrUserNotFound = fmt.Errorf("User not found")
 
-// GetProducts returns all products from the database
+// GetUsers returns all users from the database
 func GetUsers() Users {
 
 	usersCollection := Client.Database("xws").Collection("users")
@@ -96,14 +103,6 @@ func GetUserByUsername(u string) (*User, error) {
 
 }
 
-// UpdateProduct replaces a product in the database with the given
-// item.
-// If a product with the given id does not exist in the database
-// this function returns a ProductNotFound error
-func UpdateUser(u User) error {
-	return nil
-}
-
 // AddUser adds a new user to the database
 func AddUser(u User) {
 	userCollection := Client.Database("xws").Collection("users")
@@ -116,17 +115,4 @@ func AddUser(u User) {
 		fmt.Println("[ERROR] inserting into database")
 	}
 	fmt.Println(result.InsertedID)
-}
-
-// DeleteProduct deletes a product from the database
-func DeleteUser(id int) error {
-
-	return nil
-}
-
-// findIndex finds the index of a product in the database
-// returns -1 when no product can be found
-func findIndexByProductID(id int) int {
-
-	return -1
 }

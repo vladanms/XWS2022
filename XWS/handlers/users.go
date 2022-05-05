@@ -6,16 +6,16 @@ import (
 	"xws_proj/data"
 )
 
-// KeyProduct is a key used for the Product object in the context
+// KeyUser is a key used for the User object in the context
 type KeyUser struct{}
 
-// Products handler for getting and updating products
+// Users handler for getting and updating users
 type Users struct {
 	l *log.Logger
 	v *data.Validation
 }
 
-// NewProducts returns a new products handler with the given logger
+// NewUsers returns a new products handler with the given logger
 func NewUsers(l *log.Logger, v *data.Validation) *Users {
 	return &Users{l, v}
 }
