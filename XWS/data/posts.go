@@ -36,3 +36,37 @@ func AddPostToDB(post Post) primitive.ObjectID {
 	fmt.Println(postID)
 	return postID
 }
+
+func AddCommentToPost(post Post, comment Comment) primitive.ObjectID {
+	fmt.Println("[DEBUG] entered adding post to db")
+	postCollection := Client.Database("xws").Collection("posts")
+	post.Comments = append(post.Comments, &comment)
+	doc, err := bson.Marshal(post)
+	if err != nil {
+		fmt.Println("[ERROR] marshaling to bson.d")
+	}
+	result, err := postCollection.UpdateOne(context.TODO(), bson.M{"ID": post.ID}, doc)
+	if err != nil {
+		fmt.Println("[ERROR] inserting into database")
+	}
+	postID := result.UpsertedID.(primitive.ObjectID)
+	fmt.Println(postID)
+	return postID
+}
+
+func AddLikeToPost(post Post, like Like) primitive.ObjectID {
+	fmt.Println("[DEBUG] entered adding post to db")
+	postCollection := Client.Database("xws").Collection("posts")
+	post.Likes = append(post.Likes, &like)
+	doc, err := bson.Marshal(post)
+	if err != nil {
+		fmt.Println("[ERROR] marshaling to bson.d")
+	}
+	result, err := postCollection.UpdateOne(context.TODO(), bson.M{"ID": post.ID}, doc)
+	if err != nil {
+		fmt.Println("[ERROR] inserting into database")
+	}
+	postID := result.UpsertedID.(primitive.ObjectID)
+	fmt.Println(postID)
+	return postID
+}

@@ -10,8 +10,8 @@ import (
 )
 
 type Comment struct {
-	author  User
-	content string
+	Author  string `json:"username,omitempty"`
+	Content string `json:"text,omitempty"`
 }
 
 type Comments []*Comment

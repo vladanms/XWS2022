@@ -10,8 +10,8 @@ import (
 )
 
 type Like struct {
-	author  User
-	content bool
+	Author  string `json:"username,omitempty"`
+	Content bool   `json:"boolean,omitempty"`
 }
 
 type Likes []*Like
@@ -37,7 +37,7 @@ func getLikeCountByPost(id string) (int, int, error) {
 	dislikeCount := 0
 
 	for i := 1; i < len(targetPost.Likes); i++ {
-		if targetPost.Likes[i].content == true {
+		if targetPost.Likes[i].Content == true {
 			likeCount++
 		} else {
 			dislikeCount++
