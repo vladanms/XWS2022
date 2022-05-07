@@ -37,6 +37,7 @@ func AddPostToDB(post Post) primitive.ObjectID {
 	fmt.Println(postID)
 	return postID
 }
+
 func GetPostsUser(username string) (Posts, []primitive.ObjectID) {
 	fmt.Printf("[DEBUG] entered getting posts for user: %s\n", username)
 	var posts Posts
@@ -56,32 +57,44 @@ func GetPostsUser(username string) (Posts, []primitive.ObjectID) {
 	}
 	return posts, postIDs
 }
-func AddCommentToPost(post Post, comment Comment) primitive.ObjectID {
-	fmt.Println("[DEBUG] entered adding post to db")
+
+func AddCommentToPost(id string, comment Comment) primitive.ObjectID {
 	postCollection := Client.Database("xws").Collection("posts")
-	post.Comments = append(post.Comments, &comment)
-	doc, err := bson.Marshal(post)
+	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	docID, err := primitive.ObjectIDFromHex(id)
+
+	var foundPost Post
+	err = postCollection.FindOne(ctx, bson.M{"_id": docID}).Decode(&foundPost)
+
+	foundPost.Comments = append(foundPost.Comments, &comment)
+
 	if err != nil {
 		fmt.Println("[ERROR] marshaling to bson.d")
 	}
-	result, err := postCollection.UpdateOne(context.TODO(), bson.M{"ID": post.ID}, doc)
+
+	result, err := postCollection.UpdateOne(context.TODO(), bson.M{"_id": foundPost.ID}, foundPost)
 	if err != nil {
 		fmt.Println("[ERROR] inserting into database")
 	}
+
 	postID := result.UpsertedID.(primitive.ObjectID)
 	fmt.Println(postID)
 	return postID
 }
 
-func AddLikeToPost(post Post, like Like) primitive.ObjectID {
-	fmt.Println("[DEBUG] entered adding post to db")
+func AddLikeToPost(id string, like Like) primitive.ObjectID {
 	postCollection := Client.Database("xws").Collection("posts")
-	post.Likes = append(post.Likes, &like)
-	doc, err := bson.Marshal(post)
+	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	docID, err := primitive.ObjectIDFromHex(id)
+
+	var foundPost Post
+	err = postCollection.FindOne(ctx, bson.M{"_id": docID}).Decode(&foundPost)
+
+	foundPost.Likes = append(foundPost.Likes, &like)
 	if err != nil {
 		fmt.Println("[ERROR] marshaling to bson.d")
 	}
-	result, err := postCollection.UpdateOne(context.TODO(), bson.M{"ID": post.ID}, doc)
+	result, err := postCollection.UpdateOne(context.TODO(), bson.M{"_id": foundPost.ID}, foundPost)
 	if err != nil {
 		fmt.Println("[ERROR] inserting into database")
 	}
