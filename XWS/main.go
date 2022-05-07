@@ -49,6 +49,16 @@ func main() {
 
 	PostImageR := sm.Methods(http.MethodPost).Subrouter()
 	PostImageR.HandleFunc("/posts", ph.CreatePost)
+
+	GetPostsR := sm.Methods(http.MethodGet).Subrouter()
+	GetPostsR.HandleFunc("/posts/{username:(?s).*}", ph.GetAllPostsFromUser)
+
+	//UpdateUserR := sm.Methods(http.MethodPatch).Subrouter()
+	//UpdateUserR.HandleFunc("/users/{username:(?s).*}", ph.UpdateUser)
+
+	getPublicUsersR := sm.Methods(http.MethodGet).Subrouter()
+	getPublicUsersR.HandleFunc("/public-users", ph.ListAllPublic)
+
 	// create a new server
 	s := http.Server{
 		Addr:         *bindAddress,      // configure the bind address

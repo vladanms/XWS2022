@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -36,7 +37,25 @@ func AddPostToDB(post Post) primitive.ObjectID {
 	fmt.Println(postID)
 	return postID
 }
+func GetPostsUser(username string) (Posts, []primitive.ObjectID) {
+	fmt.Printf("[DEBUG] entered getting posts for user: %s\n", username)
+	var posts Posts
+	postsCollection := Client.Database("xws").Collection("posts")
+	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
 
+	filter := bson.D{{"username", username}}
+	cursor, err := postsCollection.Find(ctx, filter)
+	if err != nil {
+		fmt.Println("[ERROR] reading from db")
+	}
+
+	cursor.All(ctx, &posts)
+	postIDs := make([]primitive.ObjectID, len(posts))
+	for i := 0; i < len(posts); i++ {
+		postIDs[i] = posts[i].ID
+	}
+	return posts, postIDs
+}
 func AddCommentToPost(post Post, comment Comment) primitive.ObjectID {
 	fmt.Println("[DEBUG] entered adding post to db")
 	postCollection := Client.Database("xws").Collection("posts")

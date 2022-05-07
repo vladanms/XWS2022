@@ -22,6 +22,7 @@ type User struct {
 	Email    string             `json:"email" validate:"required,excludesall= "`
 	Password *string            `json:",omitempty" validate:"password,excludesall= "`
 	Role     Role               `json:"-"`
+	Public   bool               `json:"-"`
 }
 
 // Users defines a slice of Product
