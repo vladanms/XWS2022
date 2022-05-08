@@ -37,13 +37,13 @@ const (
 type User struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"-"`
 	Username    string             `json:"username" validate:"username,excludesall= "`
-	Email       string             `json:"email" validate:"required,excludesall= "`
+	Email       string             `json:"email" validate:"email,required,excludesall= "`
 	Password    *string            `json:",omitempty" validate:"password,excludesall= "`
 	Role        Role               `json:"-"`
 	Public      bool               `json:"-"`
 	Gender      Gender             `json:"gender"`
 	Name        string             `json:"name"`
-	PhoneNumber string             `json:"phoneNumber"`
+	PhoneNumber string             `json:"phoneNumber" validate:"phoneNumber,excludesall= "`
 	DateOfBirth time.Time          `json:"dateOfBirth"`
 	Biography   string             `json:"biography"`
 	Experience  string             `json:"experience"`
