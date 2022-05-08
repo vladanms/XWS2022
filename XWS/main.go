@@ -71,6 +71,12 @@ func main() {
 	GetNotificationPostsR := sm.Methods(http.MethodGet).Subrouter()
 	GetNotificationPostsR.HandleFunc("/notifications", ph.GetNotificationPosts)
 
+	CommentR := sm.Methods(http.MethodPut).Subrouter()
+	CommentR.HandleFunc("/comment", ph.AddComment)
+
+	LikeR := sm.Methods(http.MethodPut).Subrouter()
+	LikeR.HandleFunc("/like", ph.AddLike)
+
 	// create a new server
 	s := http.Server{
 		Addr:         *bindAddress,      // configure the bind address
