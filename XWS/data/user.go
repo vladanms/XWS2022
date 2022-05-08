@@ -16,13 +16,40 @@ const (
 	RegUser      = 2
 )
 
+type Gender int8
+
+const (
+	Unknown Gender = 0
+	Male           = 1
+	Female         = 2
+)
+
+type DegreeType int8
+
+const (
+	LowerSecondary DegreeType = 0
+	UpperSecondary            = 1
+	Bachelors                 = 2
+	Masters                   = 3
+	Doctoral                  = 4
+)
+
 type User struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty" json:"-"`
-	Username string             `json:"username" validate:"username,excludesall= "`
-	Email    string             `json:"email" validate:"required,excludesall= "`
-	Password *string            `json:",omitempty" validate:"password,excludesall= "`
-	Role     Role               `json:"-"`
-	Public   bool               `json:"-"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	Username    string             `json:"username" validate:"username,excludesall= "`
+	Email       string             `json:"email" validate:"required,excludesall= "`
+	Password    *string            `json:",omitempty" validate:"password,excludesall= "`
+	Role        Role               `json:"-"`
+	Public      bool               `json:"-"`
+	Gender      Gender             `json:"gender"`
+	Name        string             `json:"name"`
+	PhoneNumber string             `json:"phoneNumber"`
+	DateOfBirth time.Time          `json:"dateOfBirth"`
+	Biography   string             `json:"biography"`
+	Experience  string             `json:"experience"`
+	Skills      string             `json:"skills"`
+	Interests   string             `json:"interests"`
+	Education   DegreeType         `json:"education"`
 }
 
 // Users defines a slice of Product
@@ -121,4 +148,21 @@ func AddUser(u User) error {
 	}
 	fmt.Println(result.InsertedID)
 	return nil
+}
+
+func UpdateUser(usr User, id string) {
+	userCollection := Client.Database("xws").Collection("users")
+
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		fmt.Println("[ERROR] can't convert string to ObjectID", err)
+		return
+	}
+
+	filter := bson.M{"_id": objectId}
+	update := bson.M{"$set": usr}
+	_, err = userCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		fmt.Println("[ERROR] updating database")
+	}
 }

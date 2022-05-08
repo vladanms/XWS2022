@@ -77,6 +77,10 @@ func main() {
 	LikeR := sm.Methods(http.MethodPut).Subrouter()
 	LikeR.HandleFunc("/like", ph.AddLike)
 
+	UpdateProfileR := sm.Methods(http.MethodPatch).Subrouter()
+	UpdateProfileR.HandleFunc("/user/{id:(?s).*}", ph.UpdateProfile)
+	UpdateProfileR.Use(ph.MiddlewareValidateUpdate)
+
 	// create a new server
 	s := http.Server{
 		Addr:         *bindAddress,      // configure the bind address
