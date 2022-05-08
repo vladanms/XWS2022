@@ -105,7 +105,11 @@ func GetUserByUsername(u string) (*User, error) {
 }
 
 // AddUser adds a new user to the database
-func AddUser(u User) {
+func AddUser(u User) error {
+	res, _ := GetUserByUsername(u.Username)
+	if res != nil {
+		return fmt.Errorf("user %s already registered", u.Username)
+	}
 	userCollection := Client.Database("xws").Collection("users")
 	doc, err := bson.Marshal(u)
 	if err != nil {
@@ -116,4 +120,5 @@ func AddUser(u User) {
 		fmt.Println("[ERROR] inserting into database")
 	}
 	fmt.Println(result.InsertedID)
+	return nil
 }

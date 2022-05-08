@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"xws_proj/data"
+
+	"github.com/gorilla/mux"
 )
 
 // Create handles POST requests to add new users
@@ -86,15 +88,22 @@ func (u *Users) CreatePost(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
-	u.l.Println(username)
 	post.Username = username.(string)
-	//post.Comments = make([]data.Comment, 0, 1000)
-	//post.Likes = make([]data.Like, 0, 1000)
 	postID := data.AddPostToDB(*post)
-	post.ID = postID
-	u.l.Println("[DEBUG] returned from adding post to db")
 
-	//r.Body = http.MaxBytesReader(rw, r.Body, 32<<20+512)
+	//notify followers about the post
+	followers := data.GetAllFollowers(post.Username)
+	fmt.Println(followers)
+	var postNotifications data.PostNotifications
+	for i := 0; i < len(followers); i++ {
+		var postNotification data.PostNotification
+		postNotification.PostID = postID
+		postNotification.Recipient = followers[i]
+		postNotifications = append(postNotifications, &postNotification)
+	}
+	fmt.Println(len(postNotifications))
+	data.AddPostNotificationsToDB(postNotifications)
+
 	err = r.ParseMultipartForm(32 << 20) // maxMemory 32MB
 	if err != nil {
 		u.l.Println("[ERROR] parsing request body")
@@ -120,4 +129,105 @@ func (u *Users) CreatePost(rw http.ResponseWriter, r *http.Request) {
 	data.StoreImageToDB(tmpfile.Name(), postID)
 	tmpfile.Close()
 	os.Remove(tmpfile.Name())
+}
+
+// handles request for following a user
+func (u *Users) FollowUser(rw http.ResponseWriter, r *http.Request) {
+	session, _ := data.Store.Get(r, "session")
+	usernameFollower, ok := session.Values["username"]
+	if !ok {
+		u.l.Println("[DEBUG] not logged in")
+		http.Error(rw, "must log in first", http.StatusUnauthorized)
+		return
+	}
+	u.l.Println("[DEBUG] you are logged in")
+
+	vars := mux.Vars(r)
+	usernameFollowee := vars["username"]
+	userFollowee, err := data.GetUserByUsername(usernameFollowee)
+	if err != nil {
+		http.Error(rw, "user was not found", http.StatusNotFound)
+		return
+	}
+	if usernameFollowee == usernameFollower.(string) {
+		http.Error(rw, "can't follow yourself", http.StatusForbidden)
+		return
+	}
+	followTest, err := data.GetFollow(usernameFollower.(string), usernameFollowee)
+	if err != nil && err.Error() != fmt.Errorf("follow not found").Error() {
+		fmt.Println("DESI BATE")
+		http.Error(rw, "server error", http.StatusInternalServerError)
+		return
+	}
+	if followTest != nil {
+		http.Error(rw, "already following that user", http.StatusConflict)
+		return
+	}
+	if !userFollowee.Public {
+		//generate request
+		fmt.Println("[DEBUG] user is private, request sent")
+		var followRequest data.FollowRequest
+		followRequest.Requester = usernameFollower.(string)
+		followRequest.Requestee = usernameFollowee
+		data.AddFollowRequestToDB(followRequest)
+		return
+	}
+
+	var follow data.Follow
+	follow.Follower = usernameFollower.(string)
+	follow.Followee = usernameFollowee
+	data.AddFollowToDB(follow)
+
+}
+
+func (u *Users) AcceptFollowRequest(rw http.ResponseWriter, r *http.Request) {
+	session, _ := data.Store.Get(r, "session")
+	username, ok := session.Values["username"]
+	if !ok {
+		u.l.Println("[DEBUG] not logged in")
+		http.Error(rw, "must log in first", http.StatusUnauthorized)
+		return
+	}
+	u.l.Println("[DEBUG] you are logged in")
+
+	vars := mux.Vars(r)
+	usernameRequest := vars["username"]
+	followRequest, err := data.GetFollowRequest(usernameRequest, username.(string))
+	if err != nil {
+		http.Error(rw, "request not found", http.StatusNotFound)
+		return
+	}
+	err = data.DeleteFollowRequest(followRequest.FollowRequestID)
+	if err != nil {
+		http.Error(rw, "deleting follow request", http.StatusInternalServerError)
+	}
+	var follow data.Follow
+	follow.Followee = username.(string)
+	follow.Follower = usernameRequest
+	data.AddFollowToDB(follow)
+
+}
+
+func (u *Users) DeclineFollowRequest(rw http.ResponseWriter, r *http.Request) {
+	session, _ := data.Store.Get(r, "session")
+	username, ok := session.Values["username"]
+	if !ok {
+		u.l.Println("[DEBUG] not logged in")
+		http.Error(rw, "must log in first", http.StatusUnauthorized)
+		return
+	}
+	u.l.Println("[DEBUG] you are logged in")
+
+	vars := mux.Vars(r)
+	usernameRequest := vars["username"]
+	followRequest, err := data.GetFollowRequest(usernameRequest, username.(string))
+	if err != nil {
+		http.Error(rw, "request not found", http.StatusNotFound)
+		return
+	}
+	err = data.DeleteFollowRequest(followRequest.FollowRequestID)
+	if err != nil {
+		http.Error(rw, "deleting follow request", http.StatusInternalServerError)
+	}
+
 }

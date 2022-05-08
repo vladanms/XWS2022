@@ -12,6 +12,7 @@ import (
 	"xws_proj/data"
 
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // ListAll handles GET requests and returns all current users
@@ -90,14 +91,60 @@ func (u *Users) GetAllPostsFromUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !user.Public {
-		u.l.Println("[ERROR] profile is private")
-		http.Error(rw, "profile is private", http.StatusForbidden)
-		return
+		session, _ := data.Store.Get(r, "session")
+		usernameLog, ok := session.Values["username"]
+		//not logged in
+		if !ok {
+			u.l.Println("[ERROR] profile is private")
+			http.Error(rw, "profile is private", http.StatusForbidden)
+			return
+		}
+		_, err := data.GetFollow(usernameLog.(string), username)
+		//not following user
+		if err != nil {
+			u.l.Println("[ERROR] profile is private")
+			http.Error(rw, "profile is private", http.StatusForbidden)
+			return
+		}
 	}
-
 	posts, postIDs := data.GetPostsUser(username)
 	images := data.GetImageByPostIDs(postIDs)
+	writeFilesPosts(posts, images)
+	os.Remove("test.zip")
+}
 
+func (u *Users) GetNotificationPosts(rw http.ResponseWriter, r *http.Request) {
+	session, _ := data.Store.Get(r, "session")
+	username, ok := session.Values["username"]
+	if !ok {
+		u.l.Println("[DEBUG] not logged in")
+		http.Error(rw, "must log in first", http.StatusUnauthorized)
+		return
+	}
+	u.l.Println("[DEBUG] you are logged in")
+	postNotifications := data.GetPostNotificationsForUser(username.(string))
+	if postNotifications == nil {
+		http.Error(rw, "no notifications", http.StatusNoContent)
+		return
+	}
+	var posts data.Posts
+	postIDs := make([]primitive.ObjectID, len(postNotifications))
+	for i := 0; i < len(postNotifications); i++ {
+		posts = append(posts, data.GetSinglePost(postNotifications[i].PostID))
+		postIDs[i] = postNotifications[i].PostID
+	}
+
+	images := data.GetImageByPostIDs(postIDs)
+	writeFilesPosts(posts, images)
+	rw.Header().Set("Content-Type", "application/zip")
+	rw.Header().Set("Content-Disposition", "attachment; filename='test.zip'")
+	http.ServeFile(rw, r, "test.zip")
+	os.Remove("test.zip")
+
+}
+
+//function writes json files with posts and zips them with image files
+func writeFilesPosts(posts data.Posts, images data.Images) {
 	flags := os.O_WRONLY | os.O_CREATE | os.O_TRUNC
 	//create zip file for delivering all posts and images
 	file, err := os.OpenFile("test.zip", flags, 0644)
@@ -135,10 +182,6 @@ func (u *Users) GetAllPostsFromUser(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rw.Header().Set("Content-Type", "application/zip")
-	rw.Header().Set("Content-Disposition", "attachment; filename='test.zip'")
-	http.ServeFile(rw, r, "test.zip")
-
 	//delete all local files
 	file.Close()
 	zipw.Close()
@@ -148,5 +191,4 @@ func (u *Users) GetAllPostsFromUser(rw http.ResponseWriter, r *http.Request) {
 	for i := 0; i < len(posts); i++ {
 		os.Remove(postsFiles[i])
 	}
-	os.Remove("test.zip")
 }

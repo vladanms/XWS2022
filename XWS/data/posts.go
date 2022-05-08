@@ -18,7 +18,14 @@ type Post struct {
 	Likes      Likes              `json:"-"`
 }
 
+type PostNotification struct {
+	PostNotifID primitive.ObjectID `bson:"_id,omitempty"`
+	PostID      primitive.ObjectID
+	Recipient   string
+}
+
 type Posts []*Post
+type PostNotifications []*PostNotification
 
 var ErrPostNotFound = fmt.Errorf("Post not found")
 
@@ -101,4 +108,70 @@ func AddLikeToPost(id string, like Like) primitive.ObjectID {
 	postID := result.UpsertedID.(primitive.ObjectID)
 	fmt.Println(postID)
 	return postID
+}
+func GetSinglePost(postID primitive.ObjectID) *Post {
+	var post Post
+	postsCollection := Client.Database("xws").Collection("posts")
+	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+
+	filter := bson.D{{"_id", postID}}
+	err := postsCollection.FindOne(ctx, filter).Decode(&post)
+	if err != nil {
+		return nil
+	}
+	return &post
+
+}
+
+func AddPostNotificationsToDB(postNotifications PostNotifications) {
+	fmt.Println("[DEBUG] entered adding post notifs to db")
+	postNotificationsCollection := Client.Database("xws").Collection("postNotifications")
+	docs := make([]interface{}, 0)
+	for i := 0; i < len(postNotifications); i++ {
+		doc, err := bson.Marshal(postNotifications[i])
+		if err != nil {
+			fmt.Println("[ERROR] marshaling to bson.d")
+		}
+		docs = append(docs, doc)
+	}
+	_, err := postNotificationsCollection.InsertMany(context.TODO(), docs)
+	if err != nil {
+		fmt.Println("[ERROR] inserting into database")
+	}
+
+}
+func GetPostNotificationsForUser(username string) PostNotifications {
+	postNotificationsCollection := Client.Database("xws").Collection("postNotifications")
+	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	filter := bson.M{"recipient": username}
+
+	cur, err := postNotificationsCollection.Find(ctx, filter)
+	if err != nil {
+		fmt.Println("[ERROR] reading from database")
+		return nil
+	}
+	var postNotifications PostNotifications
+	err = cur.All(ctx, &postNotifications)
+	if err != nil {
+		fmt.Println("[ERROR] decoding results")
+		return nil
+	}
+	err = DeletePostNotifications(postNotifications)
+	if err != nil {
+		fmt.Println("[ERROR] deleting notifications")
+		return nil
+	}
+	return postNotifications
+}
+
+func DeletePostNotifications(postNotifications PostNotifications) error {
+	postNotificationsCollection := Client.Database("xws").Collection("postNotifications")
+	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	for i := 0; i < len(postNotifications); i++ {
+		_, err := postNotificationsCollection.DeleteOne(ctx, bson.M{"_id": postNotifications[i].PostNotifID})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

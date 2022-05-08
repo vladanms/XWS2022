@@ -59,6 +59,18 @@ func main() {
 	getPublicUsersR := sm.Methods(http.MethodGet).Subrouter()
 	getPublicUsersR.HandleFunc("/public-users", ph.ListAllPublic)
 
+	FollowUserR := sm.Methods(http.MethodPost).Subrouter()
+	FollowUserR.HandleFunc("/follow/{username:(?s).*}", ph.FollowUser)
+
+	AcceptFollowRequestR := sm.Methods(http.MethodPost).Subrouter()
+	AcceptFollowRequestR.HandleFunc("/follow-accept/{username:(?s).*}", ph.AcceptFollowRequest)
+
+	DeclineFollowRequestR := sm.Methods(http.MethodPost).Subrouter()
+	DeclineFollowRequestR.HandleFunc("/follow-decline/{username:(?s).*}", ph.DeclineFollowRequest)
+
+	GetNotificationPostsR := sm.Methods(http.MethodGet).Subrouter()
+	GetNotificationPostsR.HandleFunc("/notifications", ph.GetNotificationPosts)
+
 	// create a new server
 	s := http.Server{
 		Addr:         *bindAddress,      // configure the bind address
