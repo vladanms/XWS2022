@@ -97,6 +97,18 @@ func AddLikeToPost(id string, like Like) primitive.ObjectID {
 	var foundPost Post
 	err = postCollection.FindOne(ctx, bson.M{"_id": docID}).Decode(&foundPost)
 
+	for _, element := range foundPost.Likes {
+		if element.Author == like.Author {
+			result, err := postCollection.UpdateOne(context.TODO(), bson.M{"_id": foundPost.ID}, foundPost)
+			if err != nil {
+				fmt.Println("[ERROR] inserting into database")
+			}
+			postID := result.UpsertedID.(primitive.ObjectID)
+			fmt.Println(postID)
+			return postID
+		}
+	}
+
 	foundPost.Likes = append(foundPost.Likes, &like)
 	if err != nil {
 		fmt.Println("[ERROR] marshaling to bson.d")
