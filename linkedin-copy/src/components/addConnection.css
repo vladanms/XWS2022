@@ -1,0 +1,54 @@
+.box-enter {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  .box-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  .box-exit {
+    opacity: 1;
+  }
+  .box-exit-active {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+
+  .search-enter {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  .search-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  .search-exit {
+    opacity: 1;
+  }
+  .search-exit-active {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 300ms, transform 300ms;
+  }
+
+  .comment-enter {
+    opacity: 0;
+    transform: scaleY(0.6);
+  }
+  .comment-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  .comment-exit {
+    opacity: 1;
+  }
+  .comment-exit-active {
+    opacity: 0;
+    transform: scaleY(0.8);
+    transition: opacity 300ms, transform 300ms;
+  }
