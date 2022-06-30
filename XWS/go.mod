@@ -44,7 +44,8 @@ require (
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )
 
-replace users_service => C:\Users\sibin\Desktop\users_service
+replace users_service => C:\Users\sibin\XWS2022\users_service
 
-replace posts_service => C:\Users\sibin\Desktop\posts_service
-replace follows_service => C:\Users\sibin\Desktop\follows_service
+
+replace posts_service => C:\Users\sibin\XWS2022\posts_service
+replace follows_service => C:\Users\sibin\XWS2022\follows_service
