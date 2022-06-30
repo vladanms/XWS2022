@@ -40,7 +40,7 @@ type User struct {
 	Email       string             `json:"email" validate:"email,required,excludesall= "`
 	Password    *string            `json:",omitempty" validate:"password,excludesall= "`
 	Role        Role               `json:"-"`
-	Public      bool               `json:"-"`
+	Public      bool               `json:"public"`
 	Gender      Gender             `json:"gender"`
 	Name        string             `json:"name"`
 	PhoneNumber string             `json:"phoneNumber" validate:"phoneNumber,excludesall= "`
@@ -111,7 +111,7 @@ func GetUserByID(id string) (*User, error) {
 func GetUserByUsername(u string) (*User, error) {
 	usersCollection := Client.Database("xws").Collection("users")
 	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
-
+	fmt.Println(u)
 	var result User
 	filter := bson.D{{"username", u}}
 

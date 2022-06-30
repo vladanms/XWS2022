@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./user";
+service User{
+    rpc getUsers(UsersRequest) returns (UsersResponse);
+    rpc getPublicUsers(UsersRequest) returns (UsersResponse);
+    rpc getUserByUsername(UserByUsernameRequest) returns (UserResponse);
+    rpc CreateUser(UserResponse) returns (UsersResponse);
+}
+
+message UsersRequest{}
+message UserByUsernameRequest{
+    string username = 1;
+}
+
+
+message UserResponse {
+    string ID = 1;          
+    string Username = 2;                 
+    string Email = 3;           
+    string Password = 4;         
+    int32 Role = 5;             
+    bool Public = 6;              
+    int32 Gender = 7;            
+    string Name = 8;          
+    string PhoneNumber = 9;         
+    google.protobuf.Timestamp DateOfBirth = 10;       
+    string Biography = 11;           
+    string Experience = 12;         
+    string Skills = 13;            
+    string Interests = 14;            
+    int32 Education = 15;      
+  }
+
+message UsersResponse{
+    repeated UserResponse results = 1;
+}
+

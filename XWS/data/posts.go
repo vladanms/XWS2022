@@ -10,12 +10,14 @@ import (
 )
 
 type Post struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Username   string             `json:"username,omitempty"`
 	TxtContent string             `json:"text,omitempty"`
 	Hyperlink  string             `json:"link,omitempty"`
-	Comments   Comments           `json:"-"`
-	Likes      Likes              `json:"-"`
+	Comments   Comments           `json:"comments,omitempty"`
+	Likes      Likes              `json:"likes,omitempty"`
+	ImagePath  string             `json:"imagePath,omitempty"`
+	ImageName  string             `json:"imageName,omitempty"`
 }
 
 type PostNotification struct {
@@ -65,13 +67,13 @@ func GetPostsUser(username string) (Posts, []primitive.ObjectID) {
 	return posts, postIDs
 }
 
-func AddCommentToPost(id string, comment Comment) primitive.ObjectID {
+func AddCommentToPost(id primitive.ObjectID, comment Comment) primitive.ObjectID {
+	fmt.Println("[DEBUG] entered adding comment to post")
 	postCollection := Client.Database("xws").Collection("posts")
 	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
-	docID, err := primitive.ObjectIDFromHex(id)
 
 	var foundPost Post
-	err = postCollection.FindOne(ctx, bson.M{"_id": docID}).Decode(&foundPost)
+	err := postCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&foundPost)
 
 	foundPost.Comments = append(foundPost.Comments, &comment)
 
@@ -79,35 +81,43 @@ func AddCommentToPost(id string, comment Comment) primitive.ObjectID {
 		fmt.Println("[ERROR] marshaling to bson.d")
 	}
 
-	result, err := postCollection.UpdateOne(context.TODO(), bson.M{"_id": foundPost.ID}, foundPost)
+	update := bson.M{"$set": bson.M{"comments": foundPost.Comments}}
+	_, err = postCollection.UpdateOne(ctx, bson.M{"_id": foundPost.ID}, update)
 	if err != nil {
 		fmt.Println("[ERROR] inserting into database")
+		fmt.Println(err)
 	}
-
-	postID := result.UpsertedID.(primitive.ObjectID)
-	fmt.Println(postID)
-	return postID
+	fmt.Println("[DEBUG] added comment to post")
+	return primitive.NilObjectID
 }
 
-func AddLikeToPost(id string, like Like) primitive.ObjectID {
+func AddLikeToPost(id primitive.ObjectID, like Like) primitive.ObjectID {
+	fmt.Println("[DEBUG] entered adding like to database")
 	postCollection := Client.Database("xws").Collection("posts")
 	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
-	docID, err := primitive.ObjectIDFromHex(id)
-
+	fmt.Println(id)
+	fmt.Println(like)
 	var foundPost Post
-	err = postCollection.FindOne(ctx, bson.M{"_id": docID}).Decode(&foundPost)
-
+	err := postCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&foundPost)
+	//if user already liked this post
+	for _, current := range foundPost.Likes {
+		if current.Author == like.Author {
+			return primitive.NilObjectID
+		}
+	}
 	foundPost.Likes = append(foundPost.Likes, &like)
 	if err != nil {
 		fmt.Println("[ERROR] marshaling to bson.d")
+		return primitive.NilObjectID
 	}
-	result, err := postCollection.UpdateOne(context.TODO(), bson.M{"_id": foundPost.ID}, foundPost)
+	update := bson.M{"$set": bson.M{"likes": foundPost.Likes}}
+	_, err = postCollection.UpdateOne(ctx, bson.M{"_id": foundPost.ID}, update)
 	if err != nil {
 		fmt.Println("[ERROR] inserting into database")
+		fmt.Println(err)
 	}
-	postID := result.UpsertedID.(primitive.ObjectID)
-	fmt.Println(postID)
-	return postID
+
+	return primitive.NilObjectID
 }
 func GetSinglePost(postID primitive.ObjectID) *Post {
 	var post Post
@@ -135,7 +145,7 @@ func AddPostNotificationsToDB(postNotifications PostNotifications) {
 		docs = append(docs, doc)
 	}
 	_, err := postNotificationsCollection.InsertMany(context.TODO(), docs)
-	if err != nil {
+	if err != nil && err != bson.ErrNilReader {
 		fmt.Println("[ERROR] inserting into database")
 	}
 

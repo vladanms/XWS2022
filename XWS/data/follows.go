@@ -23,6 +23,7 @@ type FollowRequest struct {
 }
 
 type Follows []*Follow
+type FollowRequests []*FollowRequest
 
 func AddFollowToDB(follow Follow) {
 	followsCollection := Client.Database("xws").Collection("follows")
@@ -116,6 +117,28 @@ func GetFollowRequest(requester, requestee string) (*FollowRequest, error) {
 	}
 	return &result, nil
 }
+func GetAllFollowRequests(requestee string) (FollowRequests, error) {
+	followRequestsCollection := Client.Database("xws").Collection("followRequests")
+
+	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	fmt.Println(requestee)
+	var result FollowRequests
+	filter := bson.M{"requestee": requestee}
+	cursor, err := followRequestsCollection.Find(ctx, filter)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, err
+	}
+	err = cursor.All(ctx, &result)
+	if err != nil {
+		fmt.Println("[ERROR] decoding result")
+		return nil, err
+	}
+	fmt.Println("[DEBUG] finished getting requests successfully")
+	return result, nil
+}
 
 func DeleteFollowRequest(followRequestID primitive.ObjectID) error {
 	followRequestsCollection := Client.Database("xws").Collection("followRequests")
@@ -140,7 +163,7 @@ func GetAllFollowers(username string) []string {
 		return nil
 	}
 	cursor.All(ctx, &follows)
-	fmt.Printf("Number of followers in get all followers %d", len(follows))
+	fmt.Printf("Number of followers in get all followers %d\n", len(follows))
 	followers := make([]string, len(follows))
 	for i := 0; i < len(follows); i++ {
 		followers[i] = follows[i].Follower

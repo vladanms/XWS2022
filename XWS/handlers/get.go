@@ -1,28 +1,99 @@
 package handlers
 
 import (
-	"archive/zip"
-	"encoding/json"
+	"context"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 
+	followProtos "follows_service/protos/follows"
+	postProtos "posts_service/protos/posts"
+	protos "users_service/protos/user"
 	"xws_proj/data"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+func (u *Users) GetRequests(rw http.ResponseWriter, r *http.Request) {
+	u.l.Println("[DEBUG] getting requests")
+	cookie, err := r.Cookie("username")
+	if err != nil {
+		u.l.Println("[DEBUG] not logged in")
+		http.Error(rw, "must log in first", http.StatusUnauthorized)
+		return
+	}
+	req := followProtos.GetFollowRRequest{Username: cookie.Value}
+	requests, err := u.fc.GetFollowRequests(r.Context(), &req)
+	if err != nil {
+		if err.Error() == "rpc error: code = Unknown desc = no requests" {
+			http.Error(rw, "no requests", http.StatusNoContent)
+			return
+		}
+		u.l.Println("[ERROR] mongo error")
+		http.Error(rw, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	if requests == nil {
+		u.l.Println("[ERROR] no requests")
+		http.Error(rw, "no follow requests", http.StatusNoContent)
+		return
+	}
+	data.ToJSON(requests.Results, rw)
+}
+
+// get a follow connection if one exists
+func (u *Users) GetFollow(rw http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("username")
+	if err != nil {
+		u.l.Println("[DEBUG] not logged in")
+		http.Error(rw, "must log in first", http.StatusUnauthorized)
+		return
+	}
+	usernameFollower := cookie.Value
+	vars := mux.Vars(r)
+	usernameFollowee := vars["username"]
+	if usernameFollowee == usernameFollower {
+		u.l.Println("[DEBUG] same usernames")
+		emptyFollow := &data.Follow{}
+		data.ToJSON(emptyFollow, rw)
+		return
+	}
+	req := followProtos.Follow{Follower: usernameFollower, Followee: usernameFollowee}
+	follow, err := u.fc.GetFollow(r.Context(), &req)
+	if err != nil && err.Error() != fmt.Errorf("rpc error: code = Unknown desc = follow not found").Error() {
+		http.Error(rw, "server error", http.StatusInternalServerError)
+		return
+	}
+	if follow == nil {
+		http.Error(rw, "not following user", http.StatusNoContent)
+		return
+	}
+	data.ToJSON(follow, rw)
+}
+
+func (u *Users) GetImageFromPost(rw http.ResponseWriter, r *http.Request) {
+	u.l.Println("[DEBUG] get image from post")
+	vars := mux.Vars(r)
+	filename := vars["fname"]
+	u.l.Println(filename)
+	file, err := os.Open("./PostImagesFS/" + filename)
+	if err != nil {
+		http.Error(rw, "file not found", http.StatusNotFound)
+		return
+	}
+	http.ServeFile(rw, r, file.Name())
+
+}
 
 // ListAll handles GET requests and returns all current users
 func (u *Users) ListAll(rw http.ResponseWriter, r *http.Request) {
 	u.l.Println("[DEBUG] get all records")
-	uss := data.GetUsers()
-	for i := 0; i < len(uss); i++ {
-		uss[i].Password = nil
+	ur := &protos.UsersRequest{}
+	resp, err := u.uc.GetUsers(context.Background(), ur)
+	if err != nil {
+		u.l.Println("[ERROR] getting users via microservice")
 	}
-	err := data.ToJSON(uss, rw)
+	err = data.ToJSON(resp.Results, rw)
 	if err != nil {
 		// we should never be here but log the error just incase
 		u.l.Println("[ERROR] serializing user", err)
@@ -79,116 +150,129 @@ func (u *Users) ListSingle(rw http.ResponseWriter, r *http.Request) {
 	}
 
 }
-func (u *Users) GetAllPostsFromUser(rw http.ResponseWriter, r *http.Request) {
-	u.l.Println("[DEBUG] get all posts")
-
+func (u *Users) GetPostsLen(rw http.ResponseWriter, r *http.Request) {
+	u.l.Println("[DEBUG] get posts len")
+	cookie, err := r.Cookie("username")
+	if err == http.ErrNoCookie {
+		http.Error(rw, "no cookie provided", http.StatusUnauthorized)
+		return
+	}
+	username := cookie.Value
+	posts, _ := data.GetPostsUser(username)
+	data.ToJSON(posts, rw)
+}
+func (u *Users) GetUserByUsername(rw http.ResponseWriter, r *http.Request) {
+	u.l.Println("[DEBUG] get user by username")
 	vars := mux.Vars(r)
 	username := vars["username"]
+	req := protos.UserByUsernameRequest{Username: username}
+	fmt.Println(req)
+	user, err := u.uc.GetUserByUsername(r.Context(), &req)
+	if err != nil {
+		if err.Error() == "rpc error: code = Unknown desc = mongo: no documents in result" {
+			http.Error(rw, "no user with that username", http.StatusNoContent)
+			return
+		}
+		u.l.Println("[ERROR] retrieving user from db")
+		http.Error(rw, "database error", http.StatusInternalServerError)
+		return
+	}
+	err = data.ToJSON(user, rw)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
 
-	user, err := data.GetUserByUsername(username)
+func (u *Users) GetAllPostsFromUser(rw http.ResponseWriter, r *http.Request) {
+	u.l.Println("[DEBUG] get all posts")
+	vars := mux.Vars(r)
+	username := vars["username"]
+	cookie, err := r.Cookie("username")
+	if err != nil {
+		//if there is no cookie, continue
+		cookie = &http.Cookie{}
+		cookie.Value = ""
+	}
+	userReq := protos.UserByUsernameRequest{Username: username}
+	user, err := u.uc.GetUserByUsername(r.Context(), &userReq)
+	//user, err := data.GetUserByUsername(username)
 	if err != nil {
 		u.l.Println("[ERROR] retrieving user from db")
 		return
 	}
-	if !user.Public {
-		session, _ := data.Store.Get(r, "session")
-		usernameLog, ok := session.Values["username"]
-		//not logged in
-		if !ok {
-			u.l.Println("[ERROR] profile is private")
-			http.Error(rw, "profile is private", http.StatusForbidden)
-			return
-		}
-		_, err := data.GetFollow(usernameLog.(string), username)
-		//not following user
-		if err != nil {
-			u.l.Println("[ERROR] profile is private")
-			http.Error(rw, "profile is private", http.StatusForbidden)
-			return
+	if username != cookie.Value {
+		if !user.Public {
+			//not logged in
+			if cookie.Value == "" {
+				u.l.Println("[ERROR] profile is private")
+				http.Error(rw, "profile is private", http.StatusUnauthorized)
+				return
+			}
+			req := followProtos.Follow{Follower: cookie.Value, Followee: username}
+			_, err := u.fc.GetFollow(r.Context(), &req)
+			//_, err := data.GetFollow(cookie.Value, username)
+			//not following user
+			if err != nil {
+				u.l.Println("[ERROR] profile is private")
+				http.Error(rw, "profile is private", http.StatusUnauthorized)
+				return
+			}
 		}
 	}
-	posts, postIDs := data.GetPostsUser(username)
-	images := data.GetImageByPostIDs(postIDs)
-	writeFilesPosts(posts, images)
-	os.Remove("test.zip")
+	req := postProtos.PostsRequest{Username: username}
+	posts, err := u.pc.GetAllPostsFromUser(r.Context(), &req)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(rw, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	err = data.ToJSON(posts.Results, rw)
+	if err != nil {
+		u.l.Println("[ERROR] marshaling to json")
+		return
+	}
+	u.l.Println("[DEBUG] finished getting posts for user")
 }
 
 func (u *Users) GetNotificationPosts(rw http.ResponseWriter, r *http.Request) {
-	session, _ := data.Store.Get(r, "session")
-	username, ok := session.Values["username"]
-	if !ok {
-		u.l.Println("[DEBUG] not logged in")
-		http.Error(rw, "must log in first", http.StatusUnauthorized)
+	u.l.Println("[DEBUG] entered getting notif posts")
+	cookie, err := r.Cookie("username")
+	if err == http.ErrNoCookie {
+		http.Error(rw, "no cookie provided", http.StatusUnauthorized)
 		return
 	}
+	username := cookie.Value
 	u.l.Println("[DEBUG] you are logged in")
-	postNotifications := data.GetPostNotificationsForUser(username.(string))
-	if postNotifications == nil {
-		http.Error(rw, "no notifications", http.StatusNoContent)
+	req := postProtos.NotificationPostsRequest{Username: username}
+	response, err := u.pc.GetNotificationPosts(r.Context(), &req)
+	if err != nil {
+		http.Error(rw, "no notifs", http.StatusNoContent)
 		return
 	}
-	var posts data.Posts
-	postIDs := make([]primitive.ObjectID, len(postNotifications))
-	for i := 0; i < len(postNotifications); i++ {
-		posts = append(posts, data.GetSinglePost(postNotifications[i].PostID))
-		postIDs[i] = postNotifications[i].PostID
-	}
 
-	images := data.GetImageByPostIDs(postIDs)
-	writeFilesPosts(posts, images)
-	rw.Header().Set("Content-Type", "application/zip")
-	rw.Header().Set("Content-Disposition", "attachment; filename='test.zip'")
-	http.ServeFile(rw, r, "test.zip")
-	os.Remove("test.zip")
-
+	data.ToJSON(response.Results, rw)
+	u.l.Println("[DEBUG] finished getting notif posts")
 }
 
-//function writes json files with posts and zips them with image files
-func writeFilesPosts(posts data.Posts, images data.Images) {
-	flags := os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	//create zip file for delivering all posts and images
-	file, err := os.OpenFile("test.zip", flags, 0644)
+func (u *Users) GetRequest(rw http.ResponseWriter, r *http.Request) {
+	u.l.Println("[DEBUG] get single request")
+	cookie, err := r.Cookie("username")
+	if err == http.ErrNoCookie {
+		http.Error(rw, "no cookie provided", http.StatusUnauthorized)
+		return
+	}
+	requester := cookie.Value
+	vars := mux.Vars(r)
+	requestee := vars["username"]
+	followRequest, err := u.fc.GetFollowRequest(r.Context(), &followProtos.FollowRequest{Requester: requester, Requestee: requestee})
 	if err != nil {
-		log.Fatalf("Failed to open zip for writing: %s", err)
-	}
-	defer file.Close()
-
-	zipw := zip.NewWriter(file)
-	defer zipw.Close()
-	postsFiles := make([]string, 0)
-
-	//create all json files for storing post data and write data in
-	for i := 0; i < len(posts); i++ {
-		filename := fmt.Sprintf("post%d.json", i)
-		jsonFile, err := os.Create(filename)
-		if err != nil {
-			fmt.Println("[ERROR] creating file")
+		if err.Error() != "rpc error: code = Unknown desc = follow request not found" {
+			http.Error(rw, "server error", http.StatusInternalServerError)
+			return
 		}
-		postsFiles = append(postsFiles, filename)
-		file, _ := json.MarshalIndent(posts[i], "", " ")
-		ioutil.WriteFile(filename, file, 0644)
-		jsonFile.Close()
+		http.Error(rw, "no request", http.StatusNoContent)
+		return
 	}
+	data.ToJSON(followRequest, rw)
 
-	//appends files and writes them to zip
-	for i := 0; i < len(posts); i++ {
-		if err := data.AppendFiles(postsFiles[i], zipw); err != nil {
-			log.Fatalf("Failed to add file %s to zip: %s", postsFiles[i], err)
-		}
-	}
-	for i := 0; i < len(images); i++ {
-		if err := data.AppendFiles(images[i].Filename, zipw); err != nil {
-			log.Fatalf("Failed to add file %s to zip: %s", postsFiles[i], err)
-		}
-	}
-
-	//delete all local files
-	file.Close()
-	zipw.Close()
-	for i := 0; i < len(images); i++ {
-		os.Remove(images[i].Filename)
-	}
-	for i := 0; i < len(posts); i++ {
-		os.Remove(postsFiles[i])
-	}
 }

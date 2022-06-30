@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+
+option go_package = "./follows";
+service Follows{
+    rpc AddFollowToDB(Follow) returns (EmptyResponse);
+    rpc AddFollowRequestToDB(FollowRequest) returns (EmptyResponse);
+    rpc GetFollowRequests(GetFollowRRequest) returns (FollowRequests);
+    rpc DeleteFollowRequest(DeleteFollowRRequest) returns (EmptyResponse);
+    rpc GetFollow(Follow) returns (Follow);
+    rpc GetFollowRequest(FollowRequest) returns (FollowRequest);
+}
+
+message Follow {
+    string FollowID = 1;
+    string Follower = 2;
+    string Followee = 3;
+}
+
+message GetFollowRRequest{
+    string Username = 1;
+}
+message FollowRequest{
+    string RequestID = 1;
+    string Requester = 2;
+    string Requestee = 3;
+}
+message FollowRequests{
+    repeated FollowRequest results = 1;
+}
+message DeleteFollowRRequest{
+    string FollowRequestID = 1;
+}
+message EmptyResponse{}

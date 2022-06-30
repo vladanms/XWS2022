@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+
+option go_package = "./posts";
+service Posts{
+    rpc GetAllPostsFromUser(PostsRequest) returns (PostsResponse);
+    rpc GetNotificationPosts(NotificationPostsRequest) returns (PostsResponse);
+    rpc GetSinglePost(SinglePostRequest) returns (PostResponse);
+    rpc CreatePost(CreateRequest) returns (CreateResponse);
+    rpc AddCommentToPost(CommentRequest) returns (CommentResponse);
+    rpc AddLikeToPost(LikeRequest) returns (LikeResponse);
+}
+message LikeRequest {
+    string Author = 1;
+    bool Content = 2;
+    string PostID = 3;
+}
+message LikeResponse {}
+message CommentRequest {
+    string Author = 1;
+    string Content = 2;
+    string PostID = 3;
+}
+message CommentResponse {}
+message CreateRequest {
+    string Username = 1; 
+    string TxtContent = 2;
+    string Hyperlink = 3;
+    repeated Comment Comments = 4;
+    repeated Like Likes = 5;
+    string ImagePath = 6;
+    string ImageName = 7;
+}
+message CreateResponse{
+    string PostID = 1;
+}
+
+message SinglePostRequest{
+    string ID = 1;
+}
+message PostsRequest{
+    string username = 1;
+}
+message NotificationPostsRequest{
+    string username = 1;
+}
+message Comment{
+    string Author = 1;
+    string Content = 2;
+}
+message Like{
+    string Author = 1;
+    bool Content = 2;
+}
+message PostResponse {
+    string ID = 1;          
+    string Username = 2; 
+    string TxtContent = 3;
+    string Hyperlink = 4;
+    repeated Comment Comments = 5;
+    repeated Like Likes = 6;
+    string ImagePath = 7;
+    string ImageName = 8;
+  }
+message PostsResponse{
+    repeated PostResponse results = 1;
+}
+
+message PostNotification{
+    string NotifID = 1;
+    string PostID = 2;
+    string Recipient = 3;
+
+}
+message PostNotifications {
+    repeated PostNotification postNotifs = 1;
+}

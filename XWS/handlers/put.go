@@ -1,66 +1,62 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	postProtos "posts_service/protos/posts"
 	"xws_proj/data"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type getComment struct {
-	idPost  primitive.ObjectID
-	content string
+	IdPost  primitive.ObjectID `json:"idPost,omitempty"`
+	Content string             `json:"content,omitempty"`
 	//username string
 }
 
 type getLike struct {
-	idPost  primitive.ObjectID
-	content bool
+	IdPost  primitive.ObjectID `json:"idPost,omitempty"`
+	Content bool               `json:"content,omitempty"`
 }
 
 func (u *Users) AddComment(rw http.ResponseWriter, r *http.Request) {
-	session, _ := data.Store.Get(r, "session")
-	username, ok := session.Values["username"]
+	u.l.Println("[DEBUG] entered adding comment")
+	cookie, err := r.Cookie("username")
 
-	if !ok {
+	if err != nil {
 		u.l.Println("[DEBUG] not logged in")
 		http.Error(rw, "You must be logged in before this action", http.StatusUnauthorized)
 		return
 	}
+	username := cookie.Value
 
-	var post getComment
+	post := getComment{}
 	data.FromJSON(&post, r.Body)
-
-	var comment *data.Comment
-	comment.Author = username.(string)
-	if post.content == "" {
+	u.l.Println(post)
+	fmt.Println(post.IdPost)
+	commentReq := postProtos.CommentRequest{Author: username, Content: post.Content, PostID: post.IdPost.Hex()}
+	if post.Content == "" {
 		http.Error(rw, "Comment must not be empty", http.StatusExpectationFailed)
 		return
 	}
-
-	comment.Content = post.content
-
-	data.AddCommentToPost(post.idPost.String(), *comment)
-
-	return
+	u.pc.AddCommentToPost(r.Context(), &commentReq)
 }
 
 func (u *Users) AddLike(rw http.ResponseWriter, r *http.Request) {
-	session, _ := data.Store.Get(r, "session")
-	username, ok := session.Values["username"]
-	if !ok {
+	u.l.Println("[DEBUG] entered adding like")
+	cookie, err := r.Cookie("username")
+	if err != nil {
 		http.Error(rw, "You must be logged in before this action", http.StatusUnauthorized)
 		return
 	}
-
-	var post getLike
+	username := cookie.Value
+	post := getLike{}
 	data.FromJSON(&post, r.Body)
-
-	var like *data.Like
-	like.Author = username.(string)
-	like.Content = post.content
-
-	data.AddLikeToPost(post.idPost.String(), *like)
-
-	return
+	u.l.Println(post)
+	like := postProtos.LikeRequest{Author: username, Content: post.Content, PostID: post.IdPost.Hex()}
+	_, err = u.pc.AddLikeToPost(r.Context(), &like)
+	if err != nil {
+		fmt.Println(err)
+	}
 }

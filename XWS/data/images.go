@@ -80,7 +80,7 @@ func GetImageByPostIDs(postIDs []primitive.ObjectID) Images {
 			log.Fatal(err)
 		}
 		fmt.Printf("File size to download: %v \n", dStream)
-		ioutil.WriteFile(results[i].Filename, buf.Bytes(), 0600)
+		ioutil.WriteFile(results[i].Filename, buf.Bytes(), 0644)
 	}
 	return results
 }

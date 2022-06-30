@@ -47,7 +47,6 @@ func NewValidation() *Validation {
 	validate.RegisterValidation("username", validateUniqueUsername)
 	validate.RegisterValidation("email", validateEmail)
 	validate.RegisterValidation("phoneNumber", validatePhoneNumber)
-
 	return &Validation{validate}
 }
 
@@ -149,6 +148,9 @@ func validateEmail(fl validator.FieldLevel) bool {
 func validatePhoneNumber(fl validator.FieldLevel) bool {
 	fmt.Println("[DEBUG] entered phone number validation")
 	updatedNumber := fl.Field().String()
+	if updatedNumber == "" {
+		return true
+	}
 	users := GetUsers()
 	var phoneNumbers []string
 	for _, user := range users {
