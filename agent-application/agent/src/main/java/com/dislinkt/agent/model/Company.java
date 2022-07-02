@@ -3,6 +3,10 @@ package com.dislinkt.agent.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+import java.util.ArrayList;
+
+
 @Document
 public class Company {
     @Id
@@ -14,7 +18,10 @@ public class Company {
     private String address;
     private String information;
     private User owner;
+    private List<JobPosition> positions;
+    private List<JobOffer> offers;
 
+    
     public Company() {}
 
     public Company(String id, String name, String email, String phoneNumber, String address, String information, User owner) {
@@ -25,6 +32,9 @@ public class Company {
         this.address = address;
         this.information = information;
         this.owner = owner;
+        this.positions = new ArrayList<JobPosition>();
+        this.offers = new ArrayList<JobOffer>();
+
     }
 
     public String getId() {
@@ -81,5 +91,30 @@ public class Company {
 
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+
+    public List<JobPosition> getPositions() {
+        return positions;
+    }
+
+    public void setPositions(List<JobPosition> positions) {
+        this.positions = positions;
+    }
+
+    public List<JobOffer> getOffers() {
+        return offers;
+    }
+
+    public void setOffers(List<JobOffer> offers) {
+        this.offers = offers;
+    }
+
+    public void addOffer(JobOffer offer)
+    {
+        this.offers.add(offer);
+    }
+    public void addPosition(JobPosition position)
+    {
+        this.positions.add(position);
     }
 }
