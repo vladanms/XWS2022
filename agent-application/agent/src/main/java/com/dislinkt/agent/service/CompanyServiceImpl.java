@@ -46,7 +46,7 @@ public class CompanyServiceImpl implements CompanyService{
     public JobOffer postOffer(Company company, JobPosition position)
     {
         String id = UUID.randomUUID().toString();
-        JobOffer offer = new JobOffer(id, position);
+        JobOffer offer = new JobOffer(id, company, position);
         company.addOffer(offer);
         return offer;
     }

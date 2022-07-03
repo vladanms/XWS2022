@@ -9,13 +9,13 @@ public class JobOffer{
     @Id
     private String id;
 
-    //private Company company;
+    private Company company;
     private JobPosition position;
 
-    public JobOffer(String id, JobPosition position)
+    public JobOffer(String id, Company company, JobPosition position)
     {
         this.id = id;
-        //this.company = company;
+        this.company = company;
         this.position = position;
     }
 
@@ -23,10 +23,10 @@ public class JobOffer{
     {
         return id;
     }
-   /* public String getCompany() 
+    public Company getCompany() 
     {
         return company;
-    }*/
+    }
     public JobPosition getPosition() 
     {
         return position;
@@ -36,10 +36,10 @@ public class JobOffer{
     {
         this.id = id;
     }
- /*   public void setCompany(Company company)
+    public void setCompany(Company company)
     {
         this.company= company;
-    }*/
+    }
     public void setPosition(JobPosition position)
     {
         this.position = position;
