@@ -1,7 +1,6 @@
 package com.dislinkt.agent.controller;
 
-import com.dislinkt.agent.model.User;
-import com.dislinkt.agent.service.UserService;
+import com.dislinkt.agent.service.CompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,9 +12,4 @@ public class CompanyController {
 
     @Autowired
     private CompanyService companyService;
-
-    @PostMapping("/register")
-    public boolean register(@RequestBody User user) {
-        return(userService.register(user));
-    }
 }

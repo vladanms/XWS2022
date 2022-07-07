@@ -1,42 +1,29 @@
-package com.dislinkt.agent.model;
+package com.dislinkt.agent.dto;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import com.dislinkt.agent.model.Role;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
-@Document
-public class User {
-    @Id
-    private String id;
-
+public class UserDTO {
+    @NotBlank
     private String username;
-    private String email;
+    @NotBlank
     private String password;
     private List<Role> roles;
+    @NotBlank
     private String name;
+    @Email
+    private String email;
     private String phoneNumber;
     private String dateOfBirth;
 
-    public User(){}
+    public UserDTO() {}
 
-    public User(String username, String email, String password, List<Role> roles, String name, String phoneNumber, String dateOfBirth) {
-        this.id = id;
+    public UserDTO(String username, String password) {
         this.username = username;
-        this.email = email;
         this.password = password;
-        this.roles = roles;
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getUsername() {
@@ -45,14 +32,6 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPassword() {
@@ -77,6 +56,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPhoneNumber() {
