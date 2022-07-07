@@ -16,24 +16,26 @@ public class Company {
     private String email;
     private String phoneNumber;
     private String address;
-    private String information;
-    private User owner;
+    private String description;
+    private String ownerId;
     private List<JobPosition> positions;
     private List<JobOffer> offers;
+    private boolean approved;
 
     
     public Company() {}
 
-    public Company(String id, String name, String email, String phoneNumber, String address, String information, User owner) {
+    public Company(String id, String name, String email, String phoneNumber, String address, String description, String ownerId, boolean approved) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.address = address;
-        this.information = information;
-        this.owner = owner;
+        this.description = description;
+        this.ownerId = ownerId;
         this.positions = new ArrayList<JobPosition>();
         this.offers = new ArrayList<JobOffer>();
+        this.approved = approved;
 
     }
 
@@ -77,20 +79,28 @@ public class Company {
         this.address = address;
     }
 
-    public String getInformation() {
-        return information;
+    public String getDescription() {
+        return description;
     }
 
-    public void setInformation(String information) {
-        this.information = information;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public User getOwner() {
-        return owner;
+    public String getOwnerId() {
+        return ownerId;
     }
 
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
     }
 
     public List<JobPosition> getPositions() {
