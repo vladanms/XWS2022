@@ -1,5 +1,7 @@
 package com.dislinkt.agent.service;
 import com.dislinkt.agent.model.Role;
+import com.dislinkt.agent.model.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -122,5 +124,20 @@ public class CompanyServiceImpl implements CompanyService{
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean apply(User user, JobOffer offer)
+    {
+        List<User> applications = new ArrayList<User>();
+        if(offer.getCompany().getOwnerId().equals((user.getId())))
+        {
+            //vlasnik ne moze aplicirati sam sebi
+            return false;
+        }
+        else
+            applications.add(user);
+            offer.setApplications(applications);
+            return true;
     }
 }

@@ -3,6 +3,7 @@ package com.dislinkt.agent.service;
 import com.dislinkt.agent.model.JobPosition;
 import com.dislinkt.agent.model.JobOffer;
 import com.dislinkt.agent.model.Company;
+import com.dislinkt.agent.model.User;
 
 import java.util.List;
 
@@ -22,4 +23,6 @@ public interface CompanyService {
     boolean removeCompany(Company unverifiedCompany);
 
     boolean updateCompany(Company updatedCompany);
+
+    boolean apply(User user, JobOffer offer);
 }

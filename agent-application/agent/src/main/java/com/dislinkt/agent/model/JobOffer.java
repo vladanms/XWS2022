@@ -15,6 +15,7 @@ public class JobOffer{
     private Company company;
     private JobPosition position;
     private List<Comment> comments;
+    private List<User> applications;
 
     public JobOffer(String id, Company company, JobPosition position)
     {
@@ -22,6 +23,7 @@ public class JobOffer{
         this.company = company;
         this.position = position;
         comments = new ArrayList<Comment>();
+        applications = new ArrayList<User>();
     }
 
      public String getId()
@@ -56,5 +58,13 @@ public class JobOffer{
     public List<Comment> getComments()
     {
         return comments;
+    }
+    public void setApplications(List<User> applications)
+    {
+        this.applications = applications;
+    }
+    public List<User> getApplications()
+    {
+        return applications;
     }
 }
