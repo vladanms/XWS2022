@@ -143,6 +143,16 @@ const UserPosts = (props) => {
                     </li>
                     <li>
                       <button>
+                        <img src="/images/icons8-dislike-58.png" alt="" />
+                        {post.Likes === undefined ? (
+                          <span>0</span>
+                        ) : (
+                          <span>{post.Likes.length}</span>
+                        )}
+                      </button>
+                    </li>
+                    <li>
+                      <button>
                         <img src="/images/icons8-comment-icon.png" alt="" />
                         {post.Comments === undefined ? (
                           <span>0</span>

@@ -164,13 +164,16 @@ func (p *Posts) AddLikeToPost(ctx context.Context, npr *protos.LikeRequest) (*pr
 		fmt.Println(err)
 		return nil, err
 	}
+	flag := false
 	for _, current := range foundPost.Likes {
 		if current.Author == like.Author {
-			return &protos.LikeResponse{}, fmt.Errorf("already liked this post")
+			current.Content = like.Content
+			flag = true
 		}
 	}
-	foundPost.Likes = append(foundPost.Likes, &like)
-
+	if !flag {
+		foundPost.Likes = append(foundPost.Likes, &like)
+	}
 	update := bson.M{"$set": bson.M{"likes": foundPost.Likes}}
 	_, err = postCollection.UpdateOne(ctx, bson.M{"_id": postID}, update)
 	if err != nil {
