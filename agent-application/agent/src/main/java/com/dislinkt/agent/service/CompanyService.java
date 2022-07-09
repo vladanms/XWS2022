@@ -4,7 +4,9 @@ import com.dislinkt.agent.model.JobPosition;
 import com.dislinkt.agent.model.JobOffer;
 import com.dislinkt.agent.model.Company;
 import com.dislinkt.agent.model.User;
+import com.dislinkt.agent.model.Interview;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CompanyService {
@@ -25,4 +27,8 @@ public interface CompanyService {
     boolean updateCompany(Company updatedCompany);
 
     boolean apply(User user, JobOffer offer);
+
+    boolean scheduleInterview (Interview interview);
+
+    boolean removeInterview(Interview interview);
 }

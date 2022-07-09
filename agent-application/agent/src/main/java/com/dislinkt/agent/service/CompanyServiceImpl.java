@@ -12,6 +12,8 @@ import java.util.UUID;
 import com.dislinkt.agent.model.JobPosition;
 import com.dislinkt.agent.model.JobOffer;
 import com.dislinkt.agent.model.Company;
+import com.dislinkt.agent.model.Interview;
+import java.time.LocalDateTime;
 
 @Service
 public class CompanyServiceImpl implements CompanyService{
@@ -138,6 +140,25 @@ public class CompanyServiceImpl implements CompanyService{
         else
             applications.add(user);
             offer.setApplications(applications);
+            mongoTemplate.save(offer);
             return true;
+    }
+
+    @Override
+    public boolean scheduleInterview(Interview interview)
+    {
+        mongoTemplate.insert(interview);
+        return true;
+    }
+
+    @Override
+    public boolean removeInterview(Interview interview) {
+        for(Interview inter : mongoTemplate.findAll(Interview.class)) {
+            if(inter.getId().equals(interview.getId())) {
+                mongoTemplate.remove(interview);
+                return true;
+            }
+        }
+        return false;
     }
 }
