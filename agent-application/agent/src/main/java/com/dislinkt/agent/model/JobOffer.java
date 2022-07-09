@@ -16,6 +16,9 @@ public class JobOffer{
     private JobPosition position;
     private List<Comment> comments;
     private List<User> applications;
+    private boolean postToDislinkt;
+
+    public JobOffer() {}
 
     public JobOffer(String id, Company company, JobPosition position)
     {
@@ -26,7 +29,7 @@ public class JobOffer{
         applications = new ArrayList<User>();
     }
 
-     public String getId()
+    public String getId()
     {
         return id;
     }
@@ -66,5 +69,13 @@ public class JobOffer{
     public List<User> getApplications()
     {
         return applications;
+    }
+
+    public boolean isPostToDislinkt() {
+        return postToDislinkt;
+    }
+
+    public void setPostToDislinkt(boolean postToDislinkt) {
+        this.postToDislinkt = postToDislinkt;
     }
 }
