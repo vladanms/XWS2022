@@ -11,6 +11,7 @@ import (
 	protos "users_service/protos/user"
 	"xws_proj/data"
 
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/gorilla/mux"
 )
 
@@ -177,7 +178,9 @@ func (u *Users) GetUserByUsername(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, "database error", http.StatusInternalServerError)
 		return
 	}
-	err = data.ToJSON(user, rw)
+	//err = data.ToJSON(user, rw)
+	var marshaler jsonpb.Marshaler
+	err = marshaler.Marshal(rw, user)
 	if err != nil {
 		fmt.Println(err)
 	}

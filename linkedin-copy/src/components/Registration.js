@@ -23,9 +23,9 @@ const Registration = (props) => {
     setPassword(e.target.value);
   };
   let navigate = useNavigate();
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    axios.post(
+    const res = await axios.post(
       "http://localhost:9090/register",
       JSON.stringify({
         Username,
@@ -33,7 +33,9 @@ const Registration = (props) => {
         Password,
       })
     );
+    if(res.status == 200){
     navigate("/home");
+    }
   };
 
   return (
@@ -43,6 +45,7 @@ const Registration = (props) => {
           <img src="/images/login-logo-dislinkt.png" alt="" />
         </a>
       </Nav>
+      <BodyWrapper>
       <Body>
         <div className="logo">
           <img className="img" src="/images/login-logo-dislinkt.png" alt="" />
@@ -84,10 +87,16 @@ const Registration = (props) => {
           </div>
         </div>
       </Body>
+      </BodyWrapper>
     </Container>
   );
 };
-
+const BodyWrapper = styled.div`
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+`;
 const Submit = styled.button`
   box-shadow: 0 0 0 1px rgb(0 0 0 / 15%), 0 0 0 rgb(0 0 0 / 20%);
   border-radius: 24px;
@@ -110,10 +119,8 @@ const Container = styled.div`
 
 const Body = styled.div`
   overflow: hidden;
-  position: absolute;
+  margin-top: 50px;
   z-index: 1000;
-  top: 25%;
-  left: 38%;
   width: 350px;
   height: 450px;
   border-radius: 15px 15px 15px 15px;

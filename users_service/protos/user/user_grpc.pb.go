@@ -26,6 +26,7 @@ type UserClient interface {
 	GetPublicUsers(ctx context.Context, in *UsersRequest, opts ...grpc.CallOption) (*UsersResponse, error)
 	GetUserByUsername(ctx context.Context, in *UserByUsernameRequest, opts ...grpc.CallOption) (*UserResponse, error)
 	CreateUser(ctx context.Context, in *UserResponse, opts ...grpc.CallOption) (*UsersResponse, error)
+	UpdateUser(ctx context.Context, in *UserResponse, opts ...grpc.CallOption) (*UsersRequest, error)
 }
 
 type userClient struct {
@@ -72,6 +73,15 @@ func (c *userClient) CreateUser(ctx context.Context, in *UserResponse, opts ...g
 	return out, nil
 }
 
+func (c *userClient) UpdateUser(ctx context.Context, in *UserResponse, opts ...grpc.CallOption) (*UsersRequest, error) {
+	out := new(UsersRequest)
+	err := c.cc.Invoke(ctx, "/User/UpdateUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
@@ -80,6 +90,7 @@ type UserServer interface {
 	GetPublicUsers(context.Context, *UsersRequest) (*UsersResponse, error)
 	GetUserByUsername(context.Context, *UserByUsernameRequest) (*UserResponse, error)
 	CreateUser(context.Context, *UserResponse) (*UsersResponse, error)
+	UpdateUser(context.Context, *UserResponse) (*UsersRequest, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -98,6 +109,9 @@ func (UnimplementedUserServer) GetUserByUsername(context.Context, *UserByUsernam
 }
 func (UnimplementedUserServer) CreateUser(context.Context, *UserResponse) (*UsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedUserServer) UpdateUser(context.Context, *UserResponse) (*UsersRequest, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -184,6 +198,24 @@ func _User_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserResponse)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).UpdateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/User/UpdateUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).UpdateUser(ctx, req.(*UserResponse))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +238,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateUser",
 			Handler:    _User_CreateUser_Handler,
+		},
+		{
+			MethodName: "UpdateUser",
+			Handler:    _User_UpdateUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

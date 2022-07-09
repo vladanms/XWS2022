@@ -9,6 +9,7 @@ const PostModal = (props) => {
   const [shareImage, setShareImage] = useState("");
   const [shareLink, setShareLink] = useState("");
   const [assetArea, setAssetArea] = useState("");
+  const [empty, setEmpty] = useState("empty");
 
   const handleChange = (e) => {
     const image = e.target.files[0];
@@ -33,15 +34,20 @@ const PostModal = (props) => {
     props.handleClick(e);
   };
 
-  const handlePost = async(e) => {
+  const handlePost = async (e) => {
     const fd = new FormData();
-    console.log(editorText)
-    console.log(shareImage.name)
-    console.log(shareLink)
-    fd.append("image", shareImage, shareImage.name);
+    console.log(editorText);
+    console.log(shareImage);
+    console.log(shareLink);
+    if (shareImage) {
+      fd.append("image", shareImage, shareImage.name);
+    } else {
+      fd.append("image", empty);
+    }
     fd.append("txtContent", editorText);
     fd.append("hyperlink", shareLink);
     fd.append("username", Cookies.get("username"));
+    console.log(fd.get("image"));
     await axios.post("http://localhost:9090/posts", fd);
     props.handleClick(e);
   };

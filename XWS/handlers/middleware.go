@@ -4,31 +4,27 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"xws_proj/data"
 
-	userProtos "users_service/protos/user"
-
 	jsonpatch "github.com/evanphx/json-patch"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // MiddlewareValidateProduct validates the product in the request and calls next if ok
 func (u *Users) MiddlewareValidateProduct(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		user := &userProtos.UserResponse{}
+		user := &data.User{}
 		u.l.Println("[DEBUG] entered middleware validation")
-		bytes, err := io.ReadAll(r.Body)
+		/*bytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			fmt.Println(err)
+			http.Error(rw, "server error", http.StatusInternalServerError)
 			return
 		}
-		err = protojson.Unmarshal(bytes, user)
-		//err = data.FromJSON(user, r.Body)
+		err = protojson.Unmarshal(bytes, user)*/
+		err := data.FromJSON(user, r.Body)
 		if err != nil {
 			u.l.Println("[ERROR] deserializing user", err)
 

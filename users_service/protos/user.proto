@@ -8,14 +8,14 @@ service User{
     rpc getPublicUsers(UsersRequest) returns (UsersResponse);
     rpc getUserByUsername(UserByUsernameRequest) returns (UserResponse);
     rpc CreateUser(UserResponse) returns (UsersResponse);
+    rpc UpdateUser(UserResponse) returns (UsersRequest);
 }
 
-message UsersRequest{}
+message UsersRequest {}
+
 message UserByUsernameRequest{
     string username = 1;
 }
-
-
 message UserResponse {
     string ID = 1;          
     string Username = 2;                 
@@ -28,7 +28,7 @@ message UserResponse {
     string PhoneNumber = 9;         
     google.protobuf.Timestamp DateOfBirth = 10;       
     string Biography = 11;           
-    string Experience = 12;         
+    int32 Experience = 12;         
     string Skills = 13;            
     string Interests = 14;            
     int32 Education = 15;      

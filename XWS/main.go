@@ -57,7 +57,7 @@ func main() {
 
 	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()
-	methods := []string{"GET", "HEAD", "POST", "PUT", "OPTIONS"}
+	methods := []string{"GET", "HEAD", "POST", "PUT", "PATCH", "OPTIONS"}
 
 	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"http://localhost:3000"}),
 		gohandlers.AllowedMethods(methods),
@@ -123,8 +123,8 @@ func main() {
 	LikeR.HandleFunc("/like", ph.AddLike)
 
 	UpdateProfileR := sm.Methods(http.MethodPatch).Subrouter()
-	UpdateProfileR.HandleFunc("/user/{id:(?s).*}", ph.UpdateProfile)
-	UpdateProfileR.Use(ph.MiddlewareValidateUpdate)
+	UpdateProfileR.HandleFunc("/update/user", ph.UpdateProfile)
+	//UpdateProfileR.Use(ph.MiddlewareValidateUpdate)
 
 	// create a new server
 	s := http.Server{

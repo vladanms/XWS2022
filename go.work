@@ -1,0 +1,6 @@
+go 1.18
+
+use ./XWS
+use ./users_service
+use ./posts_service
+use ./follows_service

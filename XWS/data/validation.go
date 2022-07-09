@@ -121,7 +121,6 @@ func isValid(s string) bool {
 func validateUniqueUsername(fl validator.FieldLevel) bool {
 	fmt.Println("[DEBUG] entered unique username validation")
 	username := fl.Field().String()
-	fmt.Println(username)
 	user, err := GetUserByUsername(username)
 	if user == nil && err == nil {
 		return true

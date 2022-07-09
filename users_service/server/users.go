@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -78,6 +79,7 @@ func (u *Users) GetUserByUsername(ctx context.Context, ur *protos.UserByUsername
 		return nil, err
 	}
 	user := &result
+	fmt.Println(user.DateOfBirth.AsTime())
 	return user, err
 }
 func (u *Users) CreateUser(ctx context.Context, ur *protos.UserResponse) (*protos.UsersResponse, error) {
@@ -98,4 +100,25 @@ func (u *Users) CreateUser(ctx context.Context, ur *protos.UserResponse) (*proto
 	}
 	fmt.Println(result.InsertedID)
 	return &protos.UsersResponse{}, nil
+}
+
+func (u *Users) UpdateUser(ctx context.Context, ur *protos.UserResponse) (*protos.UsersRequest, error) {
+	u.log.Info("updating user")
+	userCollection := database.Client.Database("xws").Collection("users")
+	objectId, err := primitive.ObjectIDFromHex(ur.ID)
+	if err != nil {
+		fmt.Println("[ERROR] can't convert string to ObjectID", err)
+		return nil, err
+	}
+	fmt.Println(objectId)
+	ur.ID = ""
+	filter := bson.M{"_id": objectId}
+	update := bson.M{"$set": ur}
+	_, err = userCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("[ERROR] updating database")
+	}
+	u.log.Info("finished updating user")
+	return &protos.UsersRequest{}, nil
 }

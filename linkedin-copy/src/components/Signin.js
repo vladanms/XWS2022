@@ -43,40 +43,41 @@ const Signin = (props) => {
           <img src="/images/login-logo-dislinkt.png" alt="" />
         </a>
       </Nav>
-      <Body>
-        <div className="logo">
-          <img className="img" src="/images/login-logo-dislinkt.png" alt="" />
-        </div>
-        <div className="form">
-          <div className="form-body">
-            <div className="username">
-              <input
-                className="form__input"
-                type="text"
-                id="firstName"
-                placeholder="Username"
-                onChange={handleUsername}
-              />
+      <BodyWrapper>
+        <Body>
+          <div className="logo">
+            <img className="img" src="/images/login-logo-dislinkt.png" alt="" />
+          </div>
+          <div className="form">
+            <div className="form-body">
+              <div className="username">
+                <input
+                  className="form__input"
+                  type="text"
+                  id="firstName"
+                  placeholder="Username"
+                  onChange={handleUsername}
+                />
+              </div>
+              <div className="password">
+                <input
+                  className="form__input"
+                  type="password"
+                  id="password"
+                  placeholder="Password"
+                  onChange={handlePassword}
+                />
+              </div>
             </div>
-            <div className="password">
-              <input
-                className="form__input"
-                type="password"
-                id="password"
-                placeholder="Password"
-                onChange={handlePassword}
-              />
+            <div class="footer">
+              <Submit type="submit" onClick={handleSubmit}>
+                Sign in
+              </Submit>
             </div>
           </div>
-          <div class="footer">
-            <Submit type="submit" onClick={handleSubmit}>
-              Sign in
-            </Submit>
-          </div>
-        </div>
-      </Body>
+        </Body>
+      </BodyWrapper>
     </Container>
-
   );
 };
 
@@ -98,30 +99,33 @@ const Submit = styled.button`
 const Container = styled.div`
   padding: 0;
   height: 100vh;
-    z-index: -1000;
-
+  z-index: -1000;
+`;
+const BodyWrapper = styled.div`
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
 `;
 const Body = styled.div`
   overflow: hidden;
-  position: absolute;
+  margin-top: 50px;
   z-index: 1000;
-  top: 200px;
-  left: 600px;
   width: 350px;
   height: 400px;
   border-radius: 15px 15px 15px 15px;
   background-color: white;
   box-shadow: 0 0 0 1px rgb(0 0 0 / 15%), 0 0 0 rgb(0 0 0 / 20%);
   input {
-      width: 200px;
-      height: 40px;
-      font-size: 16px;
-      border: 2px solid grey;
-      border-radius: 5px 5px 5px 5px;
-      transition-duration: 130ms;
-      &:hover {
-          border-color: rgba(105, 105, 105, 0.3);
-      }
+    width: 200px;
+    height: 40px;
+    font-size: 16px;
+    border: 2px solid grey;
+    border-radius: 5px 5px 5px 5px;
+    transition-duration: 130ms;
+    &:hover {
+      border-color: rgba(105, 105, 105, 0.3);
+    }
   }
 `;
 

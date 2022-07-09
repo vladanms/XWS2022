@@ -70,7 +70,7 @@ const UserPosts = (props) => {
   useEffect(() => {
     const images = async () => {
       const userRes = await axios.get(
-        "http://localhost:9090/users/" + props.userInfo.username
+        "http://localhost:9090/users/" + props.userInfo.Username
       );
       console.log(userRes.data);
       setUser(userRes.data);
@@ -93,7 +93,7 @@ const UserPosts = (props) => {
   return (
     <Container>
       <>
-        {!props.userInfo.Public && !props.followingUser ? (
+        {(!props.userInfo.Public && !props.followingUser) && props.userInfo.Role !== 1 ? (
           <NoContentPrompt>
             <img src="/images/icons8-private-lock-90.png" alt=""></img>
             <p>This Account is Private</p>

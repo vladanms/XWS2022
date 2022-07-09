@@ -19,18 +19,18 @@ import (
 // Create handles POST requests to add new users
 func (u *Users) Register(rw http.ResponseWriter, r *http.Request) {
 	u.l.Println("[DEBUG] entered create")
-	user := r.Context().Value(KeyUser{}).(*userProtos.UserResponse)
-	u.l.Println("[DEBUG] retreived the user")
+	user := r.Context().Value(KeyUser{}).(*data.User)
+	u.l.Println("[DEBUG] retrieved the user")
+	userProto := userProtos.UserResponse{Username: user.Username, Password: *user.Password, Email: user.Email}
 	var err error
-	user.Password, err = data.HashPassword(user.Password)
-	user.Role = data.RegUser
+	userProto.Password, err = data.HashPassword(userProto.Password)
+	userProto.Role = 2
 	if err != nil {
 		fmt.Println("[ERROR] hashing password")
 		return
 	}
 	//u.l.Printf("[DEBUG] Inserting user:\n %#v\n", user)
-	u.uc.CreateUser(r.Context(), user)
-	//data.AddUser(*user)
+	u.uc.CreateUser(r.Context(), &userProto)
 }
 
 func (u *Users) LogIn(rw http.ResponseWriter, r *http.Request) {
@@ -77,6 +77,7 @@ func (u *Users) LogOut(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (u *Users) CreatePost(rw http.ResponseWriter, r *http.Request) {
+	u.l.Println("[DEBUG] create post")
 	post := postsProtos.CreateRequest{}
 	err := r.ParseMultipartForm(128 * 1024) // maxMemory 32MB
 	if err != nil {
@@ -97,25 +98,30 @@ func (u *Users) CreatePost(rw http.ResponseWriter, r *http.Request) {
 	post.Username = username
 	post.Comments = make([]*postsProtos.Comment, 0)
 	post.Likes = make([]*postsProtos.Like, 0)
-
+	emptyImage := ""
 	file, h, err := r.FormFile("image")
 	if err != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		return
+		emptyImage = r.FormValue("image")
+		if emptyImage == "" {
+			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
 	}
-	tmpfile, err := os.Create("./PostImagesFS/" + h.Filename)
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
+	if emptyImage == "" {
+		tmpfile, err := os.Create("./PostImagesFS/" + h.Filename)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		_, err = io.Copy(tmpfile, file)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		tmpfile.Close()
+		post.ImagePath = "./PostImagesFS/"
+		post.ImageName = filepath.Base(tmpfile.Name())
 	}
-	_, err = io.Copy(tmpfile, file)
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	tmpfile.Close()
-	post.ImagePath = "./PostImagesFS/"
-	post.ImageName = filepath.Base(tmpfile.Name())
 
 	CreateResponse, err := u.pc.CreatePost(r.Context(), &post)
 	if err != nil {
@@ -140,6 +146,7 @@ func (u *Users) CreatePost(rw http.ResponseWriter, r *http.Request) {
 	if len(postNotifications) != 0 {
 		data.AddPostNotificationsToDB(postNotifications)
 	}
+	u.l.Println("[DEBUG] finished create post")
 
 }
 

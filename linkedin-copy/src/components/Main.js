@@ -53,7 +53,7 @@ const Main = (props) => {
     setContent("");
     document.getElementById("commentContent").value = "";
     const elems = document.getElementsByClassName("addingComments");
-    for(let i = 0; i < elems.length; i++){
+    for (let i = 0; i < elems.length; i++) {
       elems.item(i).value = "";
     }
   };
@@ -86,7 +86,7 @@ const Main = (props) => {
       setPosts(res.data);
       console.log(res.data);
     };
-    if(Cookies.get("username") !== undefined){  
+    if (Cookies.get("username") !== undefined) {
       images();
     }
   }, [showModal, content, likeChanged]);
@@ -103,148 +103,167 @@ const Main = (props) => {
   };
   return (
     <Container>
-      { Cookies.get("username") !== undefined ? (
+      {Cookies.get("username") !== undefined ? (
         <>
-      <ShareBox>
-        <div>
-          <img src="/images/user.svg" alt="" />
-          <button onClick={handleClick}>Start a post</button>
-        </div>
+          <ShareBox>
+            <div>
+              <img src="/images/user.svg" alt="" />
+              <button onClick={handleClick}>Start a post</button>
+            </div>
 
-        <div>
-          <button>
-            <img src="/images/icons8-photo-64.png" alt="" />
-            <span>Photo</span>
-          </button>
+            <div>
+              <button>
+                <img src="/images/icons8-photo-64.png" alt="" />
+                <span>Photo</span>
+              </button>
 
-          <button>
-            <img src="/images/icons8-add-video-53.png" alt="" />
-            <span>Video</span>
-          </button>
+              <button>
+                <img src="/images/icons8-add-video-53.png" alt="" />
+                <span>Video</span>
+              </button>
 
-          <button>
-            <img src="/images/icons8-add-event-48.png" alt="" />
-            <span>Event</span>
-          </button>
+              <button>
+                <img src="/images/icons8-add-event-48.png" alt="" />
+                <span>Event</span>
+              </button>
 
-          <button>
-            <img src="/images/icons8-article-64.png" alt="" />
-            <span>Write article</span>
-          </button>
-        </div>
-      </ShareBox>
-      <>
-        {!posts ? (
-          <NoContentPrompt>
-            <img src="/images/icons8-no-data.png" alt=""></img>
-            <p>You have not posted yet</p>
-          </NoContentPrompt>
-        ) : (
-          <Content>
-            {posts.length > 0 &&
-              posts.map((post, key) => (
-                <Article key={key}>
-                  <SharedActor>
-                    <a>
-                      <img src="/images/user.svg" alt="" />
-                      <div>
-                        <span>{Cookies.get("username")}</span>
-                        <span>{loggedUser.Email}</span>
-                        <span>23/6/2022</span>
-                      </div>
-                    </a>
-                    <button>
-                      <img src="/images/icons8-ellipsis-60.png" alt="" />
-                    </button>
-                  </SharedActor>
-                  <Description>{post.TxtContent}</Description>
-                  <SharedImg>
-                    <a>
-                      <img
-                        src={"http://localhost:9090/images/" + post.ImageName}
-                        alt=""
-                      />
-                    </a>
-                  </SharedImg>
-                  <SocialCounts>
-                    <li>
-                      <button>
-                        <img src="/images/icons8-like-64.png" alt="" />
-                        {post.Likes === undefined ? (
-                          <span>0</span>
-                        ) : (
-                          <span>{post.Likes.length}</span>
-                        )}
-                      </button>
-                    </li>
-                    <li>
-                      <button>
-                        <img src="/images/icons8-comment-icon.png" alt="" />
-                        {post.Comments === undefined ? (
-                          <span>0</span>
-                        ) : (
-                          <span>{post.Comments.length}</span>
-                        )}
-                      </button>
-                    </li>
-                  </SocialCounts>
-                  <SocialActions>
-                    <button onClick={() => handleLike(post.ID)}>
-                      <img src={handleLikeIcon(post.Likes)} alt="" />
-                      <span>Like</span>
-                    </button>
-                    <button onClick={() => handleDisplayComments(key)}>
-                      <img src="/images/icons8-comment-58.png" alt="" />
-                      <span>Comments</span>
-                    </button>
-                    <button>
-                      <img src="/images/icons8-share-48.png" alt="" />
-                      <span>Share</span>
-                    </button>
-                  </SocialActions>
-                  <AddComment>
-                    <img src="/images/user.svg" alt="" />
-                    <input
-                      id="commentContent"
-                      className="addingComments"
-                      type="text"
-                      placeholder=" Add comment..."
-                      onChange={handleContent}
-                    ></input>
-                    <button onClick={() => handlePostComment(post.ID)}>
-                      Post
-                    </button>
-                  </AddComment>
+              <button>
+                <img src="/images/icons8-article-64.png" alt="" />
+                <span>Write article</span>
+              </button>
+            </div>
+          </ShareBox>
+          <>
+            {!posts ? (
+              <NoContentPrompt>
+                <img src="/images/icons8-no-data.png" alt=""></img>
+                <p>You have not posted yet</p>
+              </NoContentPrompt>
+            ) : (
+              <Content>
+                {posts.length > 0 &&
+                  posts.map((post, key) => (
+                    <Article key={key}>
+                      <SharedActor>
+                        <a>
+                          <img src="/images/user.svg" alt="" />
+                          <div>
+                            <span>{Cookies.get("username")}</span>
+                            <span>{loggedUser.Email}</span>
+                            <span>23/6/2022</span>
+                          </div>
+                        </a>
+                        <button>
+                          <img src="/images/icons8-ellipsis-60.png" alt="" />
+                        </button>
+                      </SharedActor>
+                      <Description>{post.TxtContent}</Description>
+                      {post.ImageName !== undefined ? (
+                        <SharedImg>
+                          <a>
+                            <img
+                              src={
+                                "http://localhost:9090/images/" + post.ImageName
+                              }
+                              alt=""
+                            />
+                          </a>
+                        </SharedImg>
+                      ) : (
+                        <></>
+                      )}
+                      {post.Hyperlink !== undefined ? (
+                        <Link>
+                          <a href={"http://" + post.Hyperlink}>
+                            {post.Hyperlink}
+                          </a>
+                        </Link>
+                      ) : (
+                        <></>
+                      )}
+                      <SocialCounts>
+                        <li>
+                          <button>
+                            <img src="/images/icons8-like-64.png" alt="" />
+                            {post.Likes === undefined ? (
+                              <span>0</span>
+                            ) : (
+                              <span>{post.Likes.length}</span>
+                            )}
+                          </button>
+                        </li>
+                        <li>
+                          <button>
+                            <img src="/images/icons8-comment-icon.png" alt="" />
+                            {post.Comments === undefined ? (
+                              <span>0</span>
+                            ) : (
+                              <span>{post.Comments.length}</span>
+                            )}
+                          </button>
+                        </li>
+                      </SocialCounts>
+                      <SocialActions>
+                        <button onClick={() => handleLike(post.ID)}>
+                          <img src={handleLikeIcon(post.Likes)} alt="" />
+                          <span>Like</span>
+                        </button>
+                        <button onClick={() => handleDisplayComments(key)}>
+                          <img src="/images/icons8-comment-58.png" alt="" />
+                          <span>Comments</span>
+                        </button>
+                        <button>
+                          <img src="/images/icons8-share-48.png" alt="" />
+                          <span>Share</span>
+                        </button>
+                      </SocialActions>
+                      <AddComment>
+                        <img src="/images/user.svg" alt="" />
+                        <input
+                          id="commentContent"
+                          className="addingComments"
+                          type="text"
+                          placeholder=" Add comment..."
+                          onChange={handleContent}
+                        ></input>
+                        <button onClick={() => handlePostComment(post.ID)}>
+                          Post
+                        </button>
+                      </AddComment>
 
-                  <CSSTransition
-                    in={displayComments[key]}
-                    timeout={300}
-                    unmountOnExit
-                    classNames="comment"
-                  >
-                    <Comments>
-                      {post.Comments !== undefined &&
-                        post.Comments.map((comment, key) => (
-                          <Comment key={key}>
-                            <UserImg>
-                              <img src="/images/user.svg" alt="" />
-                              <CommentInfo>
-                                <h5>{comment.Author}</h5>
-                              </CommentInfo>
-                            </UserImg>
-                            <CommentContent>{comment.Content}</CommentContent>
-                          </Comment>
-                        ))}
-                    </Comments>
-                  </CSSTransition>
-                </Article>
-              ))}
-          </Content>
-        )}
-      </>
-      <PostModal showModal={showModal} handleClick={handleClick} />
-      </>
-                   ) : (<Guest>Guest users can't post</Guest>) }
+                      <CSSTransition
+                        in={displayComments[key]}
+                        timeout={300}
+                        unmountOnExit
+                        classNames="comment"
+                      >
+                        <Comments>
+                          {post.Comments !== undefined &&
+                            post.Comments.map((comment, key) => (
+                              <Comment key={key}>
+                                <UserImg>
+                                  <img src="/images/user.svg" alt="" />
+                                  <CommentInfo>
+                                    <h5>{comment.Author}</h5>
+                                  </CommentInfo>
+                                </UserImg>
+                                <CommentContent>
+                                  {comment.Content}
+                                </CommentContent>
+                              </Comment>
+                            ))}
+                        </Comments>
+                      </CSSTransition>
+                    </Article>
+                  ))}
+              </Content>
+            )}
+          </>
+          <PostModal showModal={showModal} handleClick={handleClick} />
+        </>
+      ) : (
+        <Guest>Guest users can't post</Guest>
+      )}
     </Container>
   );
 };
@@ -252,7 +271,13 @@ const Main = (props) => {
 const Container = styled.div`
   grid-area: main;
 `;
-
+const Link = styled.div`
+  display: flex;
+  align-items: flex-start;
+  margin: 0 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9e5df;
+`;
 const CommonCard = styled.div`
   text-align: center;
   overflow: hidden;

@@ -1,28 +1,31 @@
 package handlers
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"bytes"
+	"fmt"
+	"io"
 	"net/http"
 	"xws_proj/data"
 
+	userProtos "users_service/protos/user"
+
 	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/gorilla/mux"
+	"github.com/golang/protobuf/jsonpb"
 )
 
 func (u *Users) UpdateProfile(rw http.ResponseWriter, r *http.Request) {
-
-	session, _ := data.Store.Get(r, "session")
-	_, ok := session.Values["username"]
-	if !ok {
+	u.l.Println("[DEBUG] updating user profile")
+	cookie, err := r.Cookie("username")
+	if err != nil {
+		u.l.Println("[DEBUG] not logged in")
 		http.Error(rw, "must log in first", http.StatusUnauthorized)
 		return
 	}
 
-	vars := mux.Vars(r)
-	id := vars["id"]
-
-	usr, err := data.GetUserByID(id)
+	username := cookie.Value
+	usr, err := u.uc.GetUserByUsername(r.Context(), &userProtos.UserByUsernameRequest{Username: username})
+	fmt.Println(usr.DateOfBirth)
+	//usr, err := data.GetUserByID(id)
 	switch err {
 	case nil:
 	case data.ErrUserNotFound:
@@ -38,43 +41,50 @@ func (u *Users) UpdateProfile(rw http.ResponseWriter, r *http.Request) {
 		data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	}
-
-	if session.Values["username"] != usr.Username {
-		http.Error(rw, "must log in as the user", http.StatusUnauthorized)
-		return
-	}
-
-	original, err := json.Marshal(usr)
+	var marshaler jsonpb.Marshaler
+	original, err := marshaler.MarshalToString(usr)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	originalBytes := []byte(original)
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	bodyString := string(body)
-	patchJSON := []byte(bodyString)
-
+	fmt.Println(bodyString)
+	patchJSON := []byte(`[` + bodyString + `]`)
 	patch, err := jsonpatch.DecodePatch(patchJSON)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	modified, err := patch.Apply(original)
+	modified, err := patch.Apply(originalBytes)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	var user userProtos.UserResponse
+	err = jsonpb.Unmarshal(bytes.NewReader(modified), &user)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(user.DateOfBirth.AsTime())
+	_, err = u.uc.UpdateUser(r.Context(), &user)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(rw, "server error", http.StatusInternalServerError)
+	}
 
-	var user *data.User
-	json.Unmarshal(modified, &user)
-
-	session.Values["username"] = user.Username
-	session.Save(r, rw)
-
-	data.UpdateUser(*user, id)
+	//data.UpdateUser(*user, id)
 }

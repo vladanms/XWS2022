@@ -52,3 +52,14 @@
     transform: scaleY(0.8);
     transition: opacity 300ms, transform 300ms;
   }
+
+  .prelepi {
+    width: 140px;
+    height: 25px;
+    margin-right: 0px;
+  }
+  .phone {
+    width: 180px;
+    margin-right: 15px;
+    margin-left: 15px;
+  }

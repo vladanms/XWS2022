@@ -3,6 +3,7 @@ module xws_proj
 go 1.18
 
 require (
+	follows_service v0.0.0
 	github.com/evanphx/json-patch v0.5.2
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/gorilla/handlers v1.5.1
@@ -11,9 +12,9 @@ require (
 	github.com/nicholasjackson/env v0.6.0
 	go.mongodb.org/mongo-driver v1.9.1
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
-	users_service v0.0.0-00010101000000-000000000000
+	google.golang.org/protobuf v1.28.0
 	posts_service v0.0.0
-	follows_service v0.0.0
+	users_service v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -22,7 +23,6 @@ require (
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
 )
 
 require (
@@ -46,6 +46,6 @@ require (
 
 replace users_service => C:\Users\sibin\XWS2022\users_service
 
-
 replace posts_service => C:\Users\sibin\XWS2022\posts_service
+
 replace follows_service => C:\Users\sibin\XWS2022\follows_service
