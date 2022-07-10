@@ -22,6 +22,35 @@ const UserPosts = (props) => {
     );
     setLikeChanged(!likeChanged);
   };
+  const handleDislike = (idPost) => {
+    let content = false;
+    console.log(idPost);
+    axios.put(
+      "http://localhost:9090/like",
+      JSON.stringify({ idPost, content }),
+      { withCredentials: true }
+    );
+    setLikeChanged(!likeChanged);
+  };
+
+  const getDislikeNumbers = (likes) => {
+    let count = 0;
+    likes.forEach((element) => {
+      if (element.Content === undefined) {
+        count++;
+      }
+    });
+    return count;
+  };
+  const getLikeNumbers = (likes) => {
+    let count = 0;
+    likes.forEach((element) => {
+      if (element.Content === true) {
+        count++;
+      }
+    });
+    return count;
+  };
   const handleContent = (e) => {
     setContent(e.target.value);
   };
@@ -31,11 +60,23 @@ const UserPosts = (props) => {
       return "/images/icons8-like-icon.png";
     }
     for (let i = 0; i < likes.length; i++) {
-      if (likes[i].Author === tmp) {
+      if (likes[i].Author === tmp && likes[i].Content === true) {
         return "/images/icons8-like-64.png";
       }
     }
     return "/images/icons8-like-icon.png";
+  };
+  const handleDislikeIcon = (likes) => {
+    let tmp = Cookies.get("username");
+    if (likes === undefined) {
+      return "/images/icons8-dislike-58.png";
+    }
+    for (let i = 0; i < likes.length; i++) {
+      if (likes[i].Author === tmp && likes[i].Content === undefined) {
+        return "/images/icons8-dislike-count.png";
+      }
+    }
+    return "/images/icons8-dislike-58.png";
   };
   const handlePostComment = (idPost) => {
     console.log(idPost);
@@ -93,7 +134,9 @@ const UserPosts = (props) => {
   return (
     <Container>
       <>
-        {(!props.userInfo.Public && !props.followingUser) && props.userInfo.Role !== 1 ? (
+        {!props.userInfo.Public &&
+        !props.followingUser &&
+        props.userInfo.Role !== 1 ? (
           <NoContentPrompt>
             <img src="/images/icons8-private-lock-90.png" alt=""></img>
             <p>This Account is Private</p>
@@ -122,14 +165,25 @@ const UserPosts = (props) => {
                     </button>
                   </SharedActor>
                   <Description>{post.TxtContent}</Description>
-                  <SharedImg>
-                    <a>
-                      <img
-                        src={"http://localhost:9090/images/" + post.ImageName}
-                        alt=""
-                      />
-                    </a>
-                  </SharedImg>
+                  {post.ImageName !== undefined ? (
+                    <SharedImg>
+                      <a>
+                        <img
+                          src={"http://localhost:9090/images/" + post.ImageName}
+                          alt=""
+                        />
+                      </a>
+                    </SharedImg>
+                  ) : (
+                    <></>
+                  )}
+                  {post.Hyperlink !== undefined ? (
+                    <Link>
+                      <a href={"http://" + post.Hyperlink}>{post.Hyperlink}</a>
+                    </Link>
+                  ) : (
+                    <></>
+                  )}
                   <SocialCounts>
                     <li>
                       <button>
@@ -137,17 +191,17 @@ const UserPosts = (props) => {
                         {post.Likes === undefined ? (
                           <span>0</span>
                         ) : (
-                          <span>{post.Likes.length}</span>
+                          <span>{getLikeNumbers(post.Likes)}</span>
                         )}
                       </button>
                     </li>
                     <li>
                       <button>
-                        <img src="/images/icons8-dislike-58.png" alt="" />
+                        <img src="/images/icons8-dislike-count.png" alt="" />
                         {post.Likes === undefined ? (
                           <span>0</span>
                         ) : (
-                          <span>{post.Likes.length}</span>
+                          <span>{getDislikeNumbers(post.Likes)}</span>
                         )}
                       </button>
                     </li>
@@ -165,13 +219,13 @@ const UserPosts = (props) => {
                   {Cookies.get("username") !== undefined ? (
                     <>
                       <SocialActions>
-                        <button
-                          onClick={() => {
-                            handleLike(post.ID);
-                          }}
-                        >
+                        <button onClick={() => handleLike(post.ID)}>
                           <img src={handleLikeIcon(post.Likes)} alt="" />
                           <span>Like</span>
+                        </button>
+                        <button onClick={() => handleDislike(post.ID)}>
+                          <img src={handleDislikeIcon(post.Likes)} alt="" />
+                          <span>Dislike</span>
                         </button>
                         <button onClick={() => handleDisplayComments(key)}>
                           <img src="/images/icons8-comment-58.png" alt="" />
@@ -231,6 +285,13 @@ const UserPosts = (props) => {
 
 const Container = styled.div`
   grid-area: main;
+`;
+const Link = styled.div`
+  display: flex;
+  align-items: flex-start;
+  margin: 0 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9e5df;
 `;
 
 const CommonCard = styled.div`

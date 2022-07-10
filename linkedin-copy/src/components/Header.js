@@ -71,7 +71,7 @@ const Header = (props) => {
       requestRes = await axios.get("http://localhost:9090/requests", {
         withCredentials: true,
       });
-      console.log(requestRes.status)
+      console.log(requestRes.status);
       setRequests(requestRes.data);
       setRequestsLen(requestRes.data.length);
     };
@@ -81,7 +81,7 @@ const Header = (props) => {
     }
   }, [displaySearchRes, resolvedRequest]);
   const handleNavToUser = (e) => {
-    if(search.Username === Cookies.get("username")){
+    if (search.Username === Cookies.get("username")) {
       navigate("/home");
       return;
     }
@@ -271,13 +271,17 @@ const Header = (props) => {
                                   <h3>{post.TxtContent}</h3>
                                 </div>
                                 <div>
-                                  <img
-                                    src={
-                                      "http://localhost:9090/images/" +
-                                      post.ImageName
-                                    }
-                                    alt=""
-                                  ></img>
+                                  {post.ImageName !== undefined ? (
+                                    <img
+                                      src={
+                                        "http://localhost:9090/images/" +
+                                        post.ImageName
+                                      }
+                                      alt=""
+                                    ></img>
+                                  ) : (
+                                    <></>
+                                  )}
                                 </div>
                               </Notification>
                             ))}
