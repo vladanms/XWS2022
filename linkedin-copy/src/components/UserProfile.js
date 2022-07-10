@@ -74,6 +74,7 @@ const UserProfile = () => {
 const Container = styled.div`
   padding-top: 52px;
   max-width: 100%;
+  height: 100vh;
 `;
 
 const Content = styled.div`

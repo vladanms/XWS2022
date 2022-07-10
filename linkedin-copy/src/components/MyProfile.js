@@ -12,7 +12,7 @@ import "react-phone-number-input/style.css";
 
 const MyProfile = (props) => {
   const [disabledFN, setDisabledFN] = useState(true);
-  const [disabledLN, setDisabledLN] = useState(true);
+  const [disabledSK, setDisabledSK] = useState(true);
   const [disabledE, setDisabledE] = useState(true);
   const [disabledG, setDisabledG] = useState(true);
   const [disabledV, setDisabledV] = useState(true);
@@ -21,7 +21,7 @@ const MyProfile = (props) => {
   const [disabledBD, setDisabledBD] = useState(true);
   const [disabledPN, setDisabledPN] = useState(true);
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [skills, setSkills] = useState("");
   const [email, setEmail] = useState("");
   const [gender, setGender] = useState(0);
   const [experience, setExperience] = useState(0);
@@ -50,23 +50,23 @@ const MyProfile = (props) => {
         }
         setDisabledFN(!disabledFN);
         break;
-      case "LN":
-        if (disabledLN === false) {
+      case "SK":
+        if (disabledSK === false) {
           const body = JSON.stringify({
             op: "replace",
-            path: "/Foo",
-            value: lastName,
+            path: "/Skills",
+            value: skills,
           });
-          /* const res = await axios.patch(
+          const res = await axios.patch(
             "http://localhost:9090/update/user",
             body,
             {
               withCredentials: true,
             }
-          );*/
-          //console.log(res.status);
+          );
+          console.log(res.status);
         }
-        setDisabledLN(!disabledLN);
+        setDisabledSK(!disabledSK);
         break;
       case "E":
         if (disabledE === false) {
@@ -180,7 +180,7 @@ const MyProfile = (props) => {
         setDisabledBD(!disabledBD);
         break;
       case "PN":
-        if(disabledPN === false){
+        if (disabledPN === false) {
           console.log(phone);
           const body = JSON.stringify({
             op: "replace",
@@ -209,7 +209,7 @@ const MyProfile = (props) => {
       );
       console.log(userRes.data);
       setFirstName(userRes.data.Name);
-      setLastName("Stojanovic");
+      setSkills(userRes.data.Skills);
       setEmail(userRes.data.Email);
       setGender(userRes.data.Gender);
       if (userRes.data.Gender === 1) {
@@ -259,19 +259,17 @@ const MyProfile = (props) => {
             </EditLabel>
           </Box>
           <Box>
-            <GeneralLabel>Last Name: </GeneralLabel>
-            <GeneralInput
-              id="lastName"
-              type="text"
-              name="lastName"
-              disabled={disabledLN}
-              value={lastName}
-              placeholder = "Last Name"
-              onChange={(e) => setLastName(e.target.value)}
-            />
+            <GeneralLabel>Skills: </GeneralLabel>
+            <textarea
+              placeholder="Skills..."
+              disabled={disabledSK}
+              value={skills}
+              onChange={(e) => setSkills(e.target.value)}
+              style={{resize:"vertical", maxHeight:"170px", width:"230px", minHeight:"25px"}}
+            ></textarea>
             <EditLabel
-              htmlFor="lastName"
-              onClick={(event) => handleEdit("LN", event)}
+              htmlFor="skills"
+              onClick={(event) => handleEdit("SK", event)}
             >
               Edit
             </EditLabel>
@@ -284,7 +282,7 @@ const MyProfile = (props) => {
               name="email"
               disabled={disabledE}
               value={email}
-              placeholder = "Email"
+              placeholder="Email"
               onChange={(e) => setEmail(e.target.value)}
             />
             <EditLabel
@@ -521,6 +519,8 @@ const Profile = styled.div`
   box-shadow: 0 0 0 1px rgb(0 0 0 / 15%), 0 0 0 rgb(0 0 0 / 20%);
   display: flex;
   flex-direction: column;
+  overflow: auto;
+  overflow-x: hidden;
 
   h1 {
     margin-left: 100px;

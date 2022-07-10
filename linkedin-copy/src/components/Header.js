@@ -254,13 +254,7 @@ const Header = (props) => {
                         /* <p style={{ marginLeft: "30px", marginTop: "10px", paddingBottom: "20px" }}>
                       There are no notifications
                     </p>*/
-                        <NotifBox>
-                          <Notification>
-                            <FirstDiv>sibin</FirstDiv>
-                            <h3>ja volim pero</h3>
-                            <img src="/images/home-logo.svg" alt=""></img>
-                          </Notification>
-                        </NotifBox>
+                        <></>
                       ) : (
                         <NotifBox>
                           {postNotifs.length > 0 &&
