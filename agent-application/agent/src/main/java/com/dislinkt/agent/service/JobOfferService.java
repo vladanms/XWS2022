@@ -9,5 +9,7 @@ public interface JobOfferService {
 
     boolean removeJobOffer(JobOffer jobOffer);
 
+    boolean updateJobOffer(JobOffer jobOffer);
+
     List<JobOffer> findAllJobOffers();
 }

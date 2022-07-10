@@ -37,6 +37,23 @@ public class JobOfferServiceImpl implements JobOfferService {
     }
 
     @Override
+    public boolean updateJobOffer(JobOffer jobOffer) {
+        for(JobOffer offer : mongoTemplate.findAll(JobOffer.class)) {
+            if(offer.getId().equals(jobOffer.getId())) {
+                
+                offer.setApplications(jobOffer.getApplications());
+                offer.setComments(jobOffer.getComments());
+                offer.setCompany(jobOffer.getCompany());
+                offer.setId(jobOffer.getId());
+                offer.setPosition(jobOffer.getPosition());
+                mongoTemplate.save(jobOffer);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public List<JobOffer> findAllJobOffers() {
         return mongoTemplate.findAll(JobOffer.class);
     }

@@ -2,6 +2,7 @@ package com.dislinkt.agent.controller;
 
 import com.dislinkt.agent.dto.JobOfferDTO;
 import com.dislinkt.agent.model.JobOffer;
+import com.dislinkt.agent.model.Comment;
 import com.dislinkt.agent.service.CompanyService;
 import com.dislinkt.agent.service.JobOfferService;
 import org.springframework.beans.BeanUtils;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import javax.validation.Valid;
 
 @RestController
@@ -39,6 +41,17 @@ public class JobOfferController {
     @GetMapping("/job-offers")
     @PreAuthorize("hasRole('COMPANY_OWNER') or hasRole('REGULAR_USER') or hasRole('ADMINISTRATOR')")
     public ResponseEntity<?> getAllJobOffers() {
+        return ResponseEntity.ok().body(jobOfferService.findAllJobOffers());
+    }
+
+    @PostMapping("/comment")
+    public ResponseEntity<?> comment(@Valid @RequestBody JobOfferDTO jobOfferDTO, Comment comment) 
+    {
+        JobOffer jobOffer = new JobOffer();
+        List<Comment> comments = jobOffer.getComments();
+        jobOffer.setComments(comments);
+        BeanUtils.copyProperties(jobOffer, jobOfferDTO);
+        jobOfferService.updateJobOffer(jobOffer);
         return ResponseEntity.ok().body(jobOfferService.findAllJobOffers());
     }
 }

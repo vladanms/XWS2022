@@ -5,11 +5,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 public class Comment {
     
+    private String id;
     private User author;
     private String content;
 
-    public Comment(User user, Comment comment)
+    public Comment(String id, User user, Comment comment)
     {
+        this.id = id;
         this.author = user;
         this.content = content;
     }
@@ -19,9 +21,19 @@ public class Comment {
         return author;
     }
 
-    public String cetContent()
+    public String getContent()
     {
         return content;
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
     }
 
     public void setAuthor(User author)
