@@ -143,22 +143,4 @@ public class CompanyServiceImpl implements CompanyService{
             mongoTemplate.save(offer);
             return true;
     }
-
-    @Override
-    public boolean scheduleInterview(Interview interview)
-    {
-        mongoTemplate.insert(interview);
-        return true;
-    }
-
-    @Override
-    public boolean removeInterview(Interview interview) {
-        for(Interview inter : mongoTemplate.findAll(Interview.class)) {
-            if(inter.getId().equals(interview.getId())) {
-                mongoTemplate.remove(interview);
-                return true;
-            }
-        }
-        return false;
-    }
 }

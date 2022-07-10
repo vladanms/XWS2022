@@ -27,8 +27,4 @@ public interface CompanyService {
     boolean updateCompany(Company updatedCompany);
 
     boolean apply(User user, JobOffer offer);
-
-    boolean scheduleInterview (Interview interview);
-
-    boolean removeInterview(Interview interview);
 }
