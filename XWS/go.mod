@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	follows_service v0.0.0
+	job_offers_service v0.0.0
 	github.com/evanphx/json-patch v0.5.2
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/gorilla/handlers v1.5.1
@@ -44,8 +45,10 @@ require (
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )
 
-replace users_service => C:\Users\sibin\XWS2022\users_service
+replace users_service => 
 
-replace posts_service => C:\Users\sibin\XWS2022\posts_service
+replace posts_service =>
 
-replace follows_service => C:\Users\sibin\XWS2022\follows_service
+replace follows_service =>
+
+replace job_offers_service =>

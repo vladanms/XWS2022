@@ -7,6 +7,7 @@ import (
 	"os"
 
 	followProtos "follows_service/protos/follows"
+	jobOfferProtos "job_offers_service/protos/joboffers"
 	postProtos "posts_service/protos/posts"
 	protos "users_service/protos/user"
 	"xws_proj/data"
@@ -277,5 +278,23 @@ func (u *Users) GetRequest(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data.ToJSON(followRequest, rw)
+}
 
+func (jo *JobOffers) GetJobOffers(rw http.ResponseWriter, r *http.Request) {
+	jo.l.Println("[DEBUG] get all job offers")
+
+	jobOffersReq := jobOfferProtos.JobOffersRequest{}
+
+	jobOffers, err := jo.joc.GetJobOffers(r.Context(), &jobOffersReq)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(rw, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	err = data.ToJSON(jobOffers.Results, rw)
+	if err != nil {
+		jo.l.Println("[ERROR] marshaling to json")
+		return
+	}
+	jo.l.Println("[DEBUG] finished getting job offers")
 }

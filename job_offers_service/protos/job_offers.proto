@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+
+option go_package = "./job_offers";
+service JobOffers{
+    rpc CreateJobOffer(JobOffer) returns (JobOffersResponse);
+    rpc GetJobOffers(JobOffersRequest) returns (JobOffersResponse);
+    rpc RemoveJobOffer(JobOffer) returns (JobOffersRequest);
+}
+
+message JobOffersRequest {}
+
+message JobOffer {
+    string ID = 1; 
+    string Position = 2;
+    string Description = 3;
+    string Requirements = 4;
+}
+
+message JobOffersResponse{
+    repeated JobOffer results = 1;
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	followsProtos "follows_service/protos/follows"
 	"io"
+	jobOfferProtos "job_offers_service/protos/joboffers"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -255,4 +256,57 @@ func (u *Users) DeclineFollowRequest(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, "deleting follow request", http.StatusInternalServerError)
 	}
 
+}
+
+func (jo *JobOffers) CreateJobOffer(rw http.ResponseWriter, r *http.Request) {
+	jo.l.Println("[DEBUG] create job offer")
+	jobOffer := jobOfferProtos.JobOffer{}
+	err := r.ParseMultipartForm(128 * 1024) // maxMemory 32MB
+	if err != nil {
+		jo.l.Println("[ERROR] parsing request body")
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	username := r.FormValue("username")
+	if username == "" {
+		jo.l.Println("[DEBUG] not logged in")
+		http.Error(rw, "must log in first", http.StatusUnauthorized)
+		return
+	}
+	jo.l.Println("[DEBUG] you are logged in")
+
+	jobOffer.Requirements = r.FormValue("requirements")
+	jobOffer.Description = r.FormValue("description")
+	jobOffer.Position = r.FormValue("position")
+
+	jo.joc.CreateJobOffer(r.Context(), &jobOffer)
+
+	jo.l.Println("[DEBUG] finished creating job offer")
+}
+
+func (jo *JobOffers) RemoveJobOffer(rw http.ResponseWriter, r *http.Request) {
+	jo.l.Println("[DEBUG] remove job offer")
+
+	jobOffer := jobOfferProtos.JobOffer{}
+	err := r.ParseMultipartForm(128 * 1024) // maxMemory 32MB
+	if err != nil {
+		jo.l.Println("[ERROR] parsing request body")
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	username := r.FormValue("username")
+	if username == "" {
+		jo.l.Println("[DEBUG] not logged in")
+		http.Error(rw, "must log in first", http.StatusUnauthorized)
+		return
+	}
+	jo.l.Println("[DEBUG] you are logged in")
+
+	jobOffer.Requirements = r.FormValue("requirements")
+	jobOffer.Description = r.FormValue("description")
+	jobOffer.Position = r.FormValue("position")
+
+	jo.joc.RemoveJobOffer(r.Context(), &jobOffer)
+
+	jo.l.Println("[DEBUG] finished removing job offer")
 }

@@ -11,6 +11,7 @@ import (
 	"xws_proj/handlers"
 
 	followProtos "follows_service/protos/follows"
+	jobOfferProtos "job_offers_service/protos/joboffers"
 	postProtos "posts_service/protos/posts"
 	protos "users_service/protos/user"
 
@@ -26,6 +27,7 @@ func main() {
 	env.Parse()
 
 	l := log.New(os.Stdout, "users-api ", log.LstdFlags)
+	l1 := log.New(os.Stdout, "joboffers-api ", log.LstdFlags)
 	v := data.NewValidation()
 
 	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
@@ -52,8 +54,17 @@ func main() {
 
 	fc := followProtos.NewFollowsClient(connFollows)
 
+	connJobOffers, err := grpc.Dial("localhost:9095", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	defer connJobOffers.Close()
+
+	joc := jobOfferProtos.NewJobOffersClient(connFollows)
+
 	// create the handlers
 	ph := handlers.NewUsers(l, v, uc, pc, fc)
+	phj := handlers.NewJobOffers(l1, joc)
 
 	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()
@@ -90,8 +101,14 @@ func main() {
 	PostImageR := sm.Methods(http.MethodPost).Subrouter()
 	PostImageR.HandleFunc("/posts", ph.CreatePost)
 
+	CreateJobOfferR := sm.Methods(http.MethodPost).Subrouter()
+	CreateJobOfferR.HandleFunc("/job-offers", phj.CreateJobOffer)
+
 	GetPostsR := sm.Methods(http.MethodGet).Subrouter()
 	GetPostsR.HandleFunc("/posts/{username:[a-zA-Z0-9]{4,10}}", ph.GetAllPostsFromUser)
+
+	GetJobOffersR := sm.Methods(http.MethodGet).Subrouter()
+	GetJobOffersR.HandleFunc("/job-offers", phj.GetJobOffers)
 
 	//UpdateUserR := sm.Methods(http.MethodPatch).Subrouter()
 	//UpdateUserR.HandleFunc("/users/{username:(?s).*}", ph.UpdateUser)
@@ -112,6 +129,9 @@ func main() {
 
 	DeclineFollowRequestR := sm.Methods(http.MethodPost).Subrouter()
 	DeclineFollowRequestR.HandleFunc("/follow-decline/{username:(?s).*}", ph.DeclineFollowRequest)
+
+	RemoveJobOfferR := sm.Methods(http.MethodPost).Subrouter()
+	RemoveJobOfferR.HandleFunc("/job-offer-remove", phj.RemoveJobOffer)
 
 	GetNotificationPostsR := sm.Methods(http.MethodGet).Subrouter()
 	GetNotificationPostsR.HandleFunc("/notifications", ph.GetNotificationPosts)
